@@ -36,7 +36,7 @@ static uint8_t adc_channel[NUM_TEMP_SENSORS] =
 
 //! Configure all registers, start interrupt loop
 void analog_init() {
-	if (NUM_TEMP_SENSORS > 0) {
+	if (analog_mask > 0) {
 		// clear ADC bit in power reduction register because of ADC use.
 		#ifdef	PRR
 			PRR &= ~MASK(PRADC);
