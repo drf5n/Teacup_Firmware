@@ -36,6 +36,7 @@ MCU_TARGET = atmega644p
 # MCU_TARGET = atmega2560
 # MCU_TARGET = at90usb1287
 # MCU_TARGET = atmega32u4
+MCU_TARGET = atmega32u4
 
 # CPU clock rate
 F_CPU = 16000000L
@@ -115,14 +116,19 @@ endif
 ifneq (,$(findstring u4,$(MCU_TARGET)))
 USE_LUFA = true
 endif
-ifdef USE_LUFA
-LDFLAGS += -Llufa_serial
 
-LIBS += -llufa_serial
-SUBDIRS += lufa_serial
-LIBDEPS += lufa_serial/liblufa_serial.a
+ USE_TEENSY = true
+ifdef USE_LUFA
+  ifdef USE_TEENSY
+    SOURCES += serial_teensy.c usb_serial.c
+  else
+    LDFLAGS += -Llufa_serial
+    LIBS += -llufa_serial
+    SUBDIRS += lufa_serial
+    LIBDEPS += lufa_serial/liblufa_serial.a
+  endif
 else
-SOURCES += serial.c
+  SOURCES += serial.c
 endif
 
 ifeq ($(PROGBAUD),0)
@@ -137,6 +143,13 @@ OBJ = $(patsubst %.c,%.o,${SOURCES})
 .PRECIOUS: %.o %.elf
 
 all: config.h subdirs $(PROGRAM).hex $(PROGRAM).lst $(PROGRAM).sym size
+
+# get teensy's usb_serial from http://www.pjrc.com/teensy/usb_serial.zip at http://www.pjrc.com/teensy/usb_serial.html
+# e.g.:
+usb_serial.c: 
+	wget http://www.pjrc.com/teensy/usb_serial.zip
+	unzip usb_serial.zip
+	cp usb_serial/usb_serial.c usb_serial/usb_serial.h . 
 
 $(PROGRAM).elf: $(LIBDEPS)
 
