@@ -289,7 +289,12 @@ void temp_sensor_tick() {
 				default: /* prevent compiler warning */
 					break;
 			}
-			temp_sensors_runtime[i].last_read_temp = temp;
+                        #ifndef TEMP_EWMA
+			   temp_sensors_runtime[i].last_read_temp = temp;
+                        #else  /* Exponentially smooth the temperature readings */   
+			   temp_sensors_runtime[i].last_read_temp = ( (long) temp * TEMP_EWMA + 
+								      (long) temp_sensors_runtime[i].last_read_temp * (1000L - TEMP_EWMA))/1000;
+			#endif
 		}
 		if (labs((int16_t)(temp_sensors_runtime[i].last_read_temp - temp_sensors_runtime[i].target_temp)) < (TEMP_HYSTERESIS*4)) {
 			if (temp_sensors_runtime[i].temp_residency < (TEMP_RESIDENCY_TIME*120))

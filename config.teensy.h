@@ -239,9 +239,9 @@ New plan:
               Y0end              1 |b1           f1| 20 A1               Bed TC
               Z0end              2 |b2  /=e6     f4| 19 A2               Stepper -ENable
            Z_ENABLE              3 |b3 *      *  f5| 18 A3               STEP X
-           Bed Heat        PWM   4 |b7  aref=/   f6| 17 A4               DIR X
-      Extruder Heat        PWM   5 |d0           f7| 16 A5               STEP Y
-                                 6 |d1           b6| 15 A6  PWM          DIR Y
+      Extruder Heat        PWM   4 |b7  aref=/   f6| 17 A4               DIR X
+           Broken          PWM   5 |d0           f7| 16 A5               STEP Y
+           Bed Heat              6 |d1           b6| 15 A6  PWM          DIR Y
                                  7 |d2   V G R   b5| 14 A7  PWM          STEP Z
                                  8 |d3 d c n S d b4| 13 A8               DIR Z
                            PWM   9 |d6 5 c d T 4 d7| 12 A9  PWM          STEP E
@@ -342,6 +342,15 @@ New plan:
 */
 #define	TEMP_RESIDENCY_TIME		60
 
+/** 
+        TEMP_EWMA: Exponentially Weighted Moving Average alpha constant for smoothing noisy sensors.  
+                   Units are thousandths, so a coefficient of 0.1 would use 100.  Undefine or set to 1000 for unfiltered data.
+                   Instrument Engineer's Handbook, 4th ed, Vol 2 p126 says values of 0.05 to 0.1 are typical.  Smaller is smoother but slower,
+		   Larger is quicker but rougher.  Good hardware shouldn't be noisy. 
+		   If you need to use this, set the PID parameter to zero (M132 S0) to make the PID loop insensitive to noise.
+*/
+#define TEMP_EWMA                        100L
+
 /// which temperature sensors are you using? List every type of sensor you use here once, to enable the appropriate code. Intercom is the gen3-style separate extruder board.
 // #define	TEMP_MAX6675
 #define	TEMP_THERMISTOR
@@ -414,8 +423,8 @@ DEFINE_TEMP_SENSOR(bed,		TT_THERMISTOR,	AIO1,	THERMISTOR_EXTRUDER)
 #endif
 
 //               name      port   pin    pwm
-DEFINE_HEATER(extruder,	DIO6)
-DEFINE_HEATER(bed,	DIO4)
+DEFINE_HEATER(extruder,	DIO4)
+DEFINE_HEATER(bed,	DIO6)
 // DEFINE_HEATER(fan,			PORTB, PINB4, OCR0B)
 // DEFINE_HEATER(chamber,	PORTD, PIND7, OCR2A)
 // DEFINE_HEATER(motor,		PORTD, PIND6, OCR2B)
