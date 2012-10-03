@@ -250,11 +250,24 @@
 #define	TEMP_HYSTERESIS				5
 
 /**
-	TEMP_RESIDENCY_TIME: actual temperature must be close to target for this long before target is achieved
-
-	temperature is "achieved" for purposes of M109 and friends when actual temperature is within [hysteresis] of target for [residency] seconds
+	TEMP_RESIDENCY_TIME: actual temperature must be close to target (within
+	set temperature +- TEMP_HYSTERESIS) for this long before target is achieved
+	(and a M116 succeeds). Unit is seconds.
 */
 #define	TEMP_RESIDENCY_TIME		60
+
+/**
+  TEMP_EWMA: Smooth noisy temperature sensors. Good hardware shouldn't be
+  noisy. Set to 1.0 for unfiltered data (and a 140 bytes smaller binary).
+
+  Instrument Engineer's Handbook, 4th ed, Vol 2 p126 says values of
+  0.05 to 0.1 are typical. Smaller is smoother but slower adjusting, larger is
+  quicker but rougher. If you need to use this, set the PID parameter to zero
+  (M132 S0) to make the PID loop insensitive to noise.
+
+  Valid range: 0.001 to 1.0
+*/
+#define TEMP_EWMA             0.1
 
 /// which temperature sensors are you using? List every type of sensor you use here once, to enable the appropriate code. Intercom is the gen3-style separate extruder board.
 // #define	TEMP_MAX6675
