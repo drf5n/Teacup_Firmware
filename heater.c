@@ -28,7 +28,11 @@ typedef struct {
 #undef DEFINE_HEATER
 /// \brief helper macro to fill heater definition struct from config.h
 // #define DEFINE_HEATER(name, port, pin, pwm) { &(port), (pin), &(pwm) },
+#ifndef BANG_BANG
 #define	DEFINE_HEATER(name, pin) { &(pin ## _WPORT), pin ## _PIN, (pin ## _PWM) },
+#else  // BANG_BANG will ignore possible PWM pins
+#define	DEFINE_HEATER(name, pin) { &(pin ## _WPORT), pin ## _PIN, NULL },
+#endif
 static const heater_definition_t heaters[NUM_HEATERS] =
 {
 	#include	"config.h"
@@ -136,12 +140,15 @@ void heater_init() {
 						TCCR4A |= MASK(COM4C1);
 						break;
 					#else
-					// 10 bit timer
+					// 10 bit timer, e.g. atmega32U4
 					case (uint16_t) &OCR4A:
 						TCCR4A |= MASK(COM4A1);
 						break;
 					case (uint16_t) &OCR4B:
 						TCCR4A |= MASK(COM4B1);
+						break;
+					case (uint16_t) &OCR4D:
+						TCCR4C |= MASK(COM4D1);
 						break;
 					#endif
 				#endif
@@ -268,7 +275,7 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 		if (DEBUG_PID && (debug_flags & DEBUG_PID))
 			sersendf_P(PSTR("T{E:%d, P:%d * %ld = %ld / I:%d * %ld = %ld / D:%d * %ld = %ld # O: %ld = %u}\n"), t_error, heater_p, heaters_pid[h].p_factor, (int32_t) heater_p * heaters_pid[h].p_factor / PID_SCALE, heaters_runtime[h].heater_i, heaters_pid[h].i_factor, (int32_t) heaters_runtime[h].heater_i * heaters_pid[h].i_factor / PID_SCALE, heater_d, heaters_pid[h].d_factor, (int32_t) heater_d * heaters_pid[h].d_factor / PID_SCALE, pid_output_intermed, pid_output);
 		#endif
-	#else
+        #else //BANG_BANG
 		if (current_temp >= target_temp)
 			pid_output = BANG_BANG_OFF;
 		else
