@@ -37,14 +37,20 @@
 #define SDA          DIO6
 
 // timers and PWM
+// The 32U4 PWMs are fairly restricted.  If you avoid timer 1 for the clock, and timer 3 for 16 bits, then with timer 4 
+// several of the PWMs are complements of each other. DIO9&DIO10 on ~OC4D&OC4D, DIO11&DIO12 on ~OC4D&OC4D, and DIO14&DIO15 on ~OC4B&OC4B
+// You can avoid the 16 bit timer 3 by using the timer 4 registers, but then the PWM pairs on DIO9&10, DIO11&12, and DIO14&15 are not independent
+// Alternately, you could try the OC3A on DIO9, but the code doesn't seem up to a 16 bit timer as of 2012-10-06
 #define TIMER4_IS_10_BIT
+#define TIMER3_IS_16_BIT
 #define OC0A         DIO4
 #define OC0B         DIO5
-#define OC3A         DIO9
+#define OC3A         DIO9  // 10 bit timer available on OC4A, but then it is the inverse of pin 10
 #define OC4A         D1O10
+//#define OC4D         DIO11 // inverse of PWM on pin DIO12  
 #define OC4D         DIO12
-#define OC1A         DIO14
-#define OC1B         DIO16
+//#define OC4B         DIO14  // isn't independent of DIO15
+#define OC4B         DIO15
 
 
 // change for your board
@@ -114,23 +120,25 @@ pins
 #define DIO8_PWM     NULL
 #define DIO8_DDR     DDRD
 
+
 #define DIO9_PIN     PINC6
 #define DIO9_RPORT   PINC
 #define DIO9_WPORT   PORTC
-#define DIO9_PWM     &OCR3A
+#define DIO9_PWM     &OCR3AL // pin 9/c6 OC3A/-OC4A are a 16 and 8/10 bit timer. Inverse of pin 10 OCR4A PWM
+                            // &OCR3A would be an independent counter, 
 #define DIO9_DDR     DDRC
 
 #define DIO10_PIN    PINC7
 #define DIO10_RPORT  PINC
 #define DIO10_WPORT  PORTC
-#define DIO10_PWM    &OCR4A
+#define DIO10_PWM    &OCR4A  // inverse.  pin 10/c7 is on a 8/10 bit timer 4 and share the same register as inverses
 #define DIO10_DDR    DDRC
 
 #define DIO11_PIN    PIND6
 #define DIO11_RPORT  PIND
 #define DIO11_WPORT  PORTD
-// note that this PWM is true on not-OCR4D
-#define DIO11_PWM    &OCR4D
+// note that this PWM is true on not-OCR4D  // Complimentary signal of DIO12 PWM
+#define DIO11_PWM    NULL   // could be &OCR4D, but isn't independent of DIO12
 #define DIO11_DDR    DDRD
 
 #define DIO12_PIN    PIND7
@@ -148,13 +156,13 @@ pins
 #define DIO14_PIN    PINB5
 #define DIO14_RPORT  PINB
 #define DIO14_WPORT  PORTB
-#define DIO14_PWM    &OCR4B
+#define DIO14_PWM    NULL  // &OCR4BL is inverse complimentary signal of DIO15_PWM
 #define DIO14_DDR    DDRB
 
 #define DIO15_PIN    PINB6
 #define DIO15_RPORT  PINB
 #define DIO15_WPORT  PORTB
-#define DIO15_PWM    &OCR4B
+#define DIO15_PWM    &OCR4B  // complimentary signal of DIO14_PWM
 #define DIO15_DDR    DDRB
 
 #define DIO16_PIN    PINF7

@@ -234,6 +234,9 @@ void io_init(void) {
 		TIMSK4 = 0;
 		OCR4A = 0;
 		OCR4B = 0;
+                #ifdef __AVR_ATmega32U4__  
+		OCR4D = 0;   //  For port PD7/DIO12 PWM
+		#endif
 	#endif
 
 	#ifdef	TCCR5A
