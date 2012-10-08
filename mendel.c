@@ -225,8 +225,12 @@ void io_init(void) {
 	#ifdef	TCCR4A
 		#ifdef TIMER4_IS_10_BIT
 			// ATmega16/32U4 fourth timer is a 10 special bit timer
-			TCCR4D = MASK(WGM40);
-			TCCR4B = MASK(CS40);
+         		TCCR4A = MASK(PWM4A) |MASK(PWM4B) ; // enable A and B
+			TCCR4C = MASK(PWM4D); // and D
+			TCCR4D = MASK(WGM40); // Phase correct
+			TCCR4B = MASK(CS40);  // no prescaler
+                        TC4H   = 0;  // clear high bits
+                        OCR4C  = 0xff; // 8 bit max count at top before reset
 		#else
 			TCCR4A = MASK(WGM40);
 			TCCR4B = MASK(WGM42) | MASK(CS40);
@@ -235,7 +239,7 @@ void io_init(void) {
 		OCR4A = 0;
 		OCR4B = 0;
                 #ifdef __AVR_ATmega32U4__  
-		OCR4D = 0;   //  For port PD7/DIO12 PWM
+		OCR4D = 0;   //  For ATmega32U/4 port PD7/DIO12 PWM
 		#endif
 	#endif
 

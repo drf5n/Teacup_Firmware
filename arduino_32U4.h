@@ -37,20 +37,17 @@
 #define SDA          DIO6
 
 // timers and PWM
-// The 32U4 PWMs are fairly restricted.  If you avoid timer 1 for the clock, and timer 3 for 16 bits, then with timer 4 
-// several of the PWMs are complements of each other. DIO9&DIO10 on ~OC4D&OC4D, DIO11&DIO12 on ~OC4D&OC4D, and DIO14&DIO15 on ~OC4B&OC4B
-// You can avoid the 16 bit timer 3 by using the timer 4 registers, but then the PWM pairs on DIO9&10, DIO11&12, and DIO14&15 are not independent
-// Alternately, you could try the OC3A on DIO9, but the code doesn't seem up to a 16 bit timer as of 2012-10-06
+// The 32U4 PWMs are fairly restricted.  If you avoid timer 1 for the clock, 
+// two pairs of the PWMs are complements of each other. DIO11&DIO12 on ~OC4D&OC4D, and DIO14&DIO15 on ~OC4B&OC4B
 #define TIMER4_IS_10_BIT
-#define TIMER3_IS_16_BIT
-#define OC0A         DIO4
-#define OC0B         DIO5
-#define OC3A         DIO9  // 10 bit timer available on OC4A, but then it is the inverse of pin 10
-#define OC4A         D1O10
-//#define OC4D         DIO11 // inverse of PWM on pin DIO12  
-#define OC4D         DIO12
-//#define OC4B         DIO14  // isn't independent of DIO15
-#define OC4B         DIO15
+#define OC0A         DIO4  // PB7
+#define OC0B         DIO5  // PD0
+#define OC3A         DIO9  // PC6 10 bit timer available on OC4A, but then it is the inverse of pin 10
+#define OC4A         D1O10 // PC7
+//#define OC4D         DIO11 // PD6 AIO10 inverse of PWM on pin DIO12  
+#define OC4D         DIO12 // PD7 AIO9
+//#define OC4B         DIO14  // PB5 AIO5 isn't independent of DIO15
+#define OC4B         DIO15 // PB6 AIO6
 
 
 // change for your board
