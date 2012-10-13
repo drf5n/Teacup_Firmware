@@ -165,6 +165,9 @@ program: $(PROGRAM).hex config.h
 	$(AVRDUDE) -c$(PROGID) $(PROGBAUD_FLAG) -p$(MCU_TARGET) -P$(PROGPORT) -C$(AVRDUDECONF) -U flash:w:$^
 	stty 115200 raw ignbrk -hup -echo ixoff < $(PROGPORT)
 
+program-teensy: $(PROGRAM).hex config.h
+	teensy_loader_cli -mmcu=$(MCU_TARGET) -w -v $<
+
 clean: clean-subdirs
 	rm -rf *.o *.elf *.lst *.map *.sym *.lss *.eep *.srec *.bin *.hex *.al *.i *.s *~
 
