@@ -2,7 +2,7 @@
 /* attempt by drf@vims.edu 2012-01-09 to fit TeaCup into a $16 teensy from htpp://www.pjrc.com/teensy/ */
 
 /** \file
-	\brief Teensy configuration.
+	\brief Teensy 2.0 configuration
 */
 
 /*
@@ -409,9 +409,6 @@ DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO1,      THERMISTOR_EXTRUDER)
 *                                                                           *
 * Define your heaters here.                                                 *
 *                                                                           *
-* Currently, heaters work on PWM-able pins, only. See the end of this file  *
-* for PWM-able pin mappings.                                                *
-*                                                                           *
 * To attach a heater to a temp sensor above, simply use exactly the same    *
 * name - copy+paste is your friend. Some common names are 'extruder',       *
 * 'bed', 'fan', 'motor', ... names with special meaning can be found        *
@@ -424,18 +421,25 @@ DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO1,      THERMISTOR_EXTRUDER)
 * temperature sensor of TT_NONE, then you can control the spindle's rpm     *
 * via temperature commands. M104 S1..255 for spindle on, M104 S0 for off.   *
 *                                                                           *
+* Set 'pwm' to ...                                                          *
+*  1  for using PWM on a PWM-able pin and on/off on other pins.             *
+*  0  for using on/off on a PWM-able pin, too.                              *
+* Using PWM usually gives smoother temperature control but can conflict     *
+* with slow switches, like solid state relays. PWM frequency can be         *
+* influenced globally with FAST_PWM, see below.                             *
+*                                                                           *
 \***************************************************************************/
 
 #ifndef DEFINE_HEATER
 	#define DEFINE_HEATER(...)
 #endif
 
-//            name      port
-DEFINE_HEATER(extruder, DIO6)
-DEFINE_HEATER(bed,      DIO4)
-// DEFINE_HEATER(fan,      PINB4)
-// DEFINE_HEATER(chamber,  PIND7)
-// DEFINE_HEATER(motor,    PIND6)
+//            name      port   pwm
+DEFINE_HEATER(extruder, DIO6,  1)
+DEFINE_HEATER(bed,      DIO4,  1)
+// DEFINE_HEATER(fan,      PINB4,  1)
+// DEFINE_HEATER(chamber,  PIND7,  1)
+// DEFINE_HEATER(motor,    PIND6,  1)
 
 /// and now because the c preprocessor isn't as smart as it could be,
 /// uncomment the ones you've listed above and comment the rest.
