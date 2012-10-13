@@ -73,43 +73,24 @@ MXL 2.032 mm/tooth, 29
  Z       200*2       / 1           / 1           * 1000  = 400000  # half-step for noise
  Extrude through a Wades' 10:43 with a M8 hobbed bolt:
          steps/revM  * revM/revO    / (dia * circ/rev) *  mm/m
- E       200*1*16    *43/10         / (8  *   3.14159)  * 1000 = 547493.5
+ E       200*1*4    *43/10         / (8  *   3.14159)  * 1000 = 136873.4
          mm/m        / (mm/rev ext)   (rev mot/rev ext)  step/revmot
- E       1000      / (8 * 3.14159)  * 43/10             * 200 * 16 = 547494
+ E       1000      / (8 * 3.14159)  * 43/10             * 200 * 4 = 136873.4
 
-w/o microstepping
 
-X,Y: 3393
-Z: 200000
-E: 34218
-
-Steps/sec at max feeds:
-c(9900,9900,1400,1900)/60*c(13576,13576,400000,547494)/1000 == 2240.040  2240.040  9333.333 17337.310
-
-Resolution in mm per step:
-1/c(13576,13576,400000,547494)*1000 == 0.073659399 0.073659399 0.002500000 0.001826504
 
 */
-#define MICROSTEPPING 1
-
-#ifdef MICROSTEPPING
 #define	STEPS_PER_M_X				        13576
 #define	STEPS_PER_M_Y					13576
 #define	STEPS_PER_M_Z				        400000
 
 /// http://blog.arcol.hu/?p=157 may help with this one
-#define	STEPS_PER_M_E					547494
-
-#else
-#define	STEPS_PER_M_X				        3393
-#define	STEPS_PER_M_Y					3393
-#define	STEPS_PER_M_Z				        200000
-
-/// http://blog.arcol.hu/?p=157 may help with this one
-#define	STEPS_PER_M_E					34218
-
-#endif
-
+//#define	STEPS_PER_M_E					547494
+// 547494*30/22.84 = 719125
+//#define	STEPS_PER_M_E				        719125
+//#define	STEPS_PER_M_E				        136873
+// Recalibrate for 30mm extrusion gets 23.005mm:  136873 * 30/23.84 = 179781
+#define	STEPS_PER_M_E				        179781  // 2012-10-13
 
 /*
 	Values depending on the capabilities of your stepper motors and other mechanics.
@@ -118,11 +99,22 @@ Resolution in mm per step:
 		Units are mm/min
 */
 
-/* R code for calculating mac feed rates:
+/* R code for estimating max feed rates:
 
-stepsPerSec <- 16e6 / 1028     /2
-distsPerM <- c(13576,13576,400000,547494)
-maxFeedPerMin <- stepsPerSec / distsPerM * 1000 *60
+stepsPerSec <- 15570 *16/20; # per http://reprap.org/wiki/Teacup_Firmware#Distances_as_expressed_in_steps for a 16mhz chip
+stepsPerM <- c(13576,13576,400000,179181)
+maxFeedPerMin <- stepsPerSec / stepsPerM * 1000 *60 
+safetyFactor <- 1/(4*2)  # divide by 4 axes, and factor of 2
+maxFeedPerMin * safetyFactor    #  == 6881.2610 6881.2610  233.5500  521.3722 mm/minute
+maxFeedPerMin * safetyFactor /60 # == 114.687684 114.687684   3.892500   8.689537 mm/second
+
+maxMMperMin = c(6881,6881,233,680) ## Teensy w/ 4,4,2,4 microstepping on a Wallace 2012-10-13
+#Steps/sec at max feeds:
+maxMMperMin/60*stepsPerM/1000  # == 1556.941 1556.941 1553.333 2030.718
+
+# Resolution:
+1/distsPerM*1000 # == 0.073659399 0.073659399 0.002500000 0.005580949 mm/step
+
  */
 
 // 16MHz / 1028 cyc/step = 15570 step/sec
@@ -134,7 +126,7 @@ maxFeedPerMin <- stepsPerSec / distsPerM * 1000 *60
 #define	MAXIMUM_FEEDRATE_X		6881
 #define	MAXIMUM_FEEDRATE_Y		6881
 #define	MAXIMUM_FEEDRATE_Z		233
-#define	MAXIMUM_FEEDRATE_E		170
+#define	MAXIMUM_FEEDRATE_E		680
 
 /// used when searching endstops and as default feedrate
 #define	SEARCH_FEEDRATE_X			50
@@ -231,28 +223,29 @@ maxFeedPerMin <- stepsPerSec / distsPerM * 1000 *60
 
 Teensy http://www.pjrc.com/teensy ATMega64U4 carrier:
 
-New plan:
+DaveX plan for Wallace 2012-10-13:  (My d0 pin is burned out)
                                          USB
-                               GND |-----#####-----| +5V
-              X0end              0 |b0   #####   F0| 21 A0               Extruder TC
-              Y0end              1 |b1           f1| 20 A1               Bed TC
-              Z0end              2 |b2  /=e6     f4| 19 A2               Stepper -ENable
-           Z_ENABLE              3 |b3 *      *  f5| 18 A3               STEP X
-      Extruder Heat        PWM   4 |b7  aref=/   f6| 17 A4               DIR X
-           Broken          PWM   5 |d0           f7| 16 A5               STEP Y
-           Bed Heat              6 |d1           b6| 15 A6  PWM          DIR Y
-                                 7 |d2   V G R   b5| 14 A7  PWM          STEP Z
-                                 8 |d3 d c n S d b4| 13 A8               DIR Z
-                           PWM   9 |d6 5 c d T 4 d7| 12 A9  PWM          STEP E
-                           PWM  10 |d7 * * * * * d6| 11 A10 (led)        DIR E
+                     GND       GND |-----#####-----| +5V              ATX +5SB
+               ATX PS_ON         0 |b0   #####   F0| 21 A0            Extruder TC
+                   X_MIN         1 |b1           f1| 20 A1            Bed TC
+                   Y_MIN         2 |b2  /=e6     f4| 19 A2            Stepper -ENABLE (or -SLEEP)
+                   Z_MIN         3 |b3 *      *  f5| 18 A3            STEP X
+                           PWM   4 |b7  aref=/   f6| 17 A4            DIR X
+                           PWM   5 |d0           f7| 16 A5            STEP Y
+                                 6 |d1           b6| 15 A6  PWM       DIR Y
+                                 7 |d2   V G R   b5| 14 A7            STEP Z
+                     Fan         8 |d3 d c n S d b4| 13 A8            DIR Z
+                Bed Heat   PWM   9 |d6 5 c d T 4 d7| 12 A9  PWM       STEP E
+           Extruder Heat   PWM  10 |d7 * * * * * d6| 11 A10 (led)     DIR E
                                    --------------------
-                                    23 ^     \ \22 A11
-                                              \- RST
+                                    23 ^      \ \----22 A11
+                                                \------ RST
 
-      Interior E6: 22 A11
+      Interior E6: 24, AIN0, INT6
       Interior Aref : Aref
       End d5 : 23
-      End d4 : 22
+      End d4 : 22, A1
+      PWM might be possible on pins PB5/DIO14/AIO7 and PD6/DIO11/AIO10 pins but they are complementary to the PWMs on the successive pins, if \             you reserve timer/counter1 for Teacup.  Avoid trying to use these two inverse PWMs, and try to use the other 6 PWMs instead. 
 */
 
 #include	"arduino.h"
@@ -276,11 +269,11 @@ New plan:
 
 //#define	PS_ON_PIN							DIO0
 #define	STEPPER_ENABLE_PIN		DIO19
-//#define	STEPPER_INVERT_ENABLE
+#define	STEPPER_INVERT_ENABLE
 
 #define	X_STEP_PIN						DIO18
 #define	X_DIR_PIN							DIO17
-#define	X_MIN_PIN							DIO0
+#define	X_MIN_PIN							DIO1
 //#define	X_MAX_PIN							xxxx
 //#define	X_ENABLE_PIN					xxxx
 //#define	X_INVERT_DIR
@@ -290,7 +283,7 @@ New plan:
 
 #define	Y_STEP_PIN						DIO16
 #define	Y_DIR_PIN							DIO15
-#define	Y_MIN_PIN							DIO1
+#define	Y_MIN_PIN							DIO2
 //#define	Y_MAX_PIN							xxxx
 //#define	Y_ENABLE_PIN					xxxx
 //#define	Y_INVERT_DIR
@@ -300,7 +293,7 @@ New plan:
 
 #define	Z_STEP_PIN						DIO14
 #define	Z_DIR_PIN							DIO13
-#define	Z_MIN_PIN							DIO2
+#define	Z_MIN_PIN							DIO3
 //#define	Z_MAX_PIN							xxxx
 //#define	Z_ENABLE_PIN					DIO17
 //#define	Z_INVERT_DIR
@@ -358,7 +351,7 @@ New plan:
 // #define	TEMP_AD595
 // #define	TEMP_PT100
 // #define	TEMP_INTERCOM
-// #define	TEMP_NONE
+#define	TEMP_NONE
 
 /***************************************************************************\
 *                                                                           *
@@ -384,9 +377,13 @@ New plan:
 	#define DEFINE_TEMP_SENSOR(...)
 #endif
 
-//                 name       type            pin        additional
-DEFINE_TEMP_SENSOR(extruder,  TT_THERMISTOR,  AIO0,      THERMISTOR_EXTRUDER)
-DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO1,      THERMISTOR_EXTRUDER)
+//                 name       type          pin		additional
+DEFINE_TEMP_SENSOR(extruder,	TT_THERMISTOR,	AIO0,	THERMISTOR_EXTRUDER)
+DEFINE_TEMP_SENSOR(bed,		TT_THERMISTOR,	AIO1,	THERMISTOR_EXTRUDER)
+//DEFINE_TEMP_SENSOR(spindle,		TT_NONE,	AIO1,	THERMISTOR_EXTRUDER)
+//DEFINE_TEMP_SENSOR(chamber,		TT_NONE,	AIO1,	THERMISTOR_EXTRUDER)
+//DEFINE_TEMP_SENSOR(motor,		TT_NONE,	AIO1,	THERMISTOR_EXTRUDER)
+//DEFINE_TEMP_SENSOR(servo,		TT_NONE,	AIO1,	THERMISTOR_EXTRUDER)
 // "noheater" is a special name for a sensor which doesn't have a heater.
 // Use "M105 P#" to read it, where # is a zero-based index into this list.
 // DEFINE_TEMP_SENSOR(noheater,  TT_THERMISTOR,  1,            0)
@@ -434,12 +431,14 @@ DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO1,      THERMISTOR_EXTRUDER)
 	#define DEFINE_HEATER(...)
 #endif
 
-//            name      port   pwm
-DEFINE_HEATER(extruder, DIO6,  1)
-DEFINE_HEATER(bed,      DIO4,  1)
-// DEFINE_HEATER(fan,      PINB4,  1)
-// DEFINE_HEATER(chamber,  PIND7,  1)
-// DEFINE_HEATER(motor,    PIND6,  1)
+//            name      port    pwm
+DEFINE_HEATER(extruder,	 DIO10, 1)
+DEFINE_HEATER(bed,	 DIO9,  1)
+DEFINE_HEATER(fan,	 DIO8,  0)
+//DEFINE_HEATER(spindle, DIO4,  1)
+//DEFINE_HEATER(chamber, DIO5,  1)
+//DEFINE_HEATER(motor,	 DIO12, 1)
+//DEFINE_HEATER(servo,   DIO15, 1)
 
 /// and now because the c preprocessor isn't as smart as it could be,
 /// uncomment the ones you've listed above and comment the rest.
@@ -510,12 +509,12 @@ may allow DEBUG on '168
 BANG_BANG_ON
 PWM value for 'on'
 */
-// #define	BANG_BANG_ON	200
+#define	BANG_BANG_ON	200
 /** \def BANG_BANG_OFF
 BANG_BANG_OFF
 PWM value for 'off'
 */
-// #define	BANG_BANG_OFF	45
+#define	BANG_BANG_OFF	45
 
 /**
 	move buffer size, in number of moves
@@ -621,10 +620,14 @@ PWM value for 'off'
 * For the Teensy atmega32U, timer pin/mappings are as follows               *
 *                                                                           *
 * Timer 1 is used for stepping, so OC1A and OC1B aren't good PWMs           *
+*                                      *** Avoid the inverse PWMs  ***      *
 * OCR0A - PB7 - DIO4                                                        *
 * OCR0B - PD0 - DIO5                                                        *
 * OCR3A - PC6 - DIO9                                                        *
-* OCR4A - PC7 - DIO10                                                       *
+* OCR4A - PC7 - DIO10       
+*~OCRAD - PD6 - DIO11 - AIO10          ***   inverse of OCR4D ***           *
 * OCR4D - PD7 - DIO12 - AIO9                                                *
+*~OCRAB - PB5 - DIO14 - AIO7           ***   inverse of OCR4B ***           *
+* OCR4B - PB6 - DIO15 - AIO6                                                *
 *                                                                           *
 \***************************************************************************/
