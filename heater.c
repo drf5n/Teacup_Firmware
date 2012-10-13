@@ -27,12 +27,8 @@ typedef struct {
 
 #undef DEFINE_HEATER
 /// \brief helper macro to fill heater definition struct from config.h
-// #define DEFINE_HEATER(name, port, pin, pwm) { &(port), (pin), &(pwm) },
-#ifndef BANG_BANG
-#define	DEFINE_HEATER(name, pin) { &(pin ## _WPORT), pin ## _PIN, (pin ## _PWM) },
-#else  // BANG_BANG will ignore possible PWM pins
-#define	DEFINE_HEATER(name, pin) { &(pin ## _WPORT), pin ## _PIN, NULL },
-#endif
+#define	DEFINE_HEATER(name, pin, pwm) { &(pin ## _WPORT), pin ## _PIN, \
+                                        pwm ? (pin ## _PWM) : NULL},
 static const heater_definition_t heaters[NUM_HEATERS] =
 {
 	#include	"config.h"
@@ -133,12 +129,12 @@ void heater_init() {
 	#ifdef	TCCR4A
 		#ifdef TIMER4_IS_10_BIT
 			// ATmega16/32U4 fourth timer is a special 10 bit timer
-                        TCCR4A = MASK(PWM4A) |MASK(PWM4B) ; // enable A and B
-                        TCCR4C = MASK(PWM4D); // and D with WGM40 as fast, phase & freq correct PWM
-			TCCR4D = MASK(WGM40);
-			TCCR4B = MASK(CS40);
-                        TC4H   = 0;  // clear high bits 9:8
-                        OCR4C  = 0xff;  // set TOP to 8 bit max count;
+			TCCR4A = MASK(PWM4A) | MASK(PWM4B) ; // enable A and B
+			TCCR4C = MASK(PWM4D); // and D
+			TCCR4D = MASK(WGM40); // Phase correct
+			TCCR4B = MASK(CS40);  // no prescaler
+			TC4H   = 0;           // clear high bits
+			OCR4C  = 0xff;        // 8 bit max count at top before reset
 		#else
 			TCCR4A = MASK(WGM40);
 			TCCR4B = MASK(WGM42) | MASK(CS40);
@@ -146,6 +142,9 @@ void heater_init() {
 		TIMSK4 = 0;
 		OCR4A = 0;
 		OCR4B = 0;
+		#ifdef OCR4D  
+			OCR4D = 0;
+		#endif
 	#endif
 
 	#ifdef	TCCR5A
@@ -206,9 +205,11 @@ void heater_init() {
 					case (uint16_t) &OCR4B:
 						TCCR4A |= MASK(COM4B1);
 						break;
-					case (uint16_t) &OCR4D:
-						TCCR4C |= MASK(COM4D1);
-						break;
+					#ifdef OCR4D  
+						case (uint16_t) &OCR4D:
+							TCCR4C |= MASK(COM4D1);
+							break;
+					#endif
 					#endif
 				#endif
 				#ifdef	TCCR5A
@@ -250,7 +251,7 @@ void heater_init() {
 	// set all heater pins to output
 	do {
 		#undef	DEFINE_HEATER
-		#define	DEFINE_HEATER(name, pin) WRITE(pin, 0); SET_OUTPUT(pin);
+		#define	DEFINE_HEATER(name, pin, pwm) WRITE(pin, 0); SET_OUTPUT(pin);
 			#include "config.h"
 		#undef DEFINE_HEATER
 	} while (0);
@@ -428,7 +429,7 @@ void heater_set(heater_t index, uint8_t value) {
 		#endif
 	}
 	else {
-		if (value >= 8)
+		if (value >= ((BANG_BANG_ON + BANG_BANG_OFF) / 2))
 			*(heaters[index].heater_port) |= MASK(heaters[index].heater_pin);
 		else
 			*(heaters[index].heater_port) &= ~MASK(heaters[index].heater_pin);

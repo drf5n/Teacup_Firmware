@@ -37,18 +37,18 @@
 #define SDA          DIO6
 
 // timers and PWM
-// The 32U4 PWMs are fairly restricted.  If you avoid timer 1 for the clock, 
-// two pairs of the PWMs are complements of each other. DIO11&DIO12 on ~OC4D&OC4D, and DIO14&DIO15 on ~OC4B&OC4B
+// The 32U4 PWMs are fairly restricted. If you avoid timer 1 for the clock, 
+// two pairs of the PWMs are complements of each other:
+// DIO11 & DIO12 on ~OC4D & OC4D and DIO14 & DIO15 on ~OC4B & OC4B
 #define TIMER4_IS_10_BIT
-#define OC0A         DIO4  // PB7
-#define OC0B         DIO5  // PD0
-#define OC3A         DIO9  // PC6 10 bit timer available on OC4A, but then it is the inverse of pin 10
-#define OC4A         D1O10 // PC7
-//#define OC4D         DIO11 // PD6 AIO10 inverse of PWM on pin DIO12  
-#define OC4D         DIO12 // PD7 AIO9
-//#define OC4B         DIO14  // PB5 AIO5 isn't independent of DIO15
-#define OC4B         DIO15 // PB6 AIO6
-
+#define OC0A         DIO4
+#define OC0B         DIO5
+#define OC3A         DIO9  // 10 bit timer on OC4A, inverse of PWM on DIO10
+#define OC4A         D1O10
+//#define OC4B         DIO14  // inverse of PWM on DIO15
+#define OC4B         DIO15
+//#define OC4D         DIO11  // inverse of PWM on DIO12  
+#define OC4D         DIO12
 
 // change for your board
 #define DEBUG_LED        DIO22 /* led D11 red */
@@ -88,8 +88,6 @@ pins
 // Timer 1 would be a problem drf 2012-01-09
 // Timer 0 might be used by serial.c 
 #define DIO4_PWM     &OCR0A
-//#define DIO4_PWM     &OCR1C
-//#define DIO4_PWM     NULL
 #define DIO4_DDR     DDRB
 
 #define DIO5_PIN     PIND0
@@ -121,8 +119,7 @@ pins
 #define DIO9_PIN     PINC6
 #define DIO9_RPORT   PINC
 #define DIO9_WPORT   PORTC
-#define DIO9_PWM     &OCR3AL // pin 9/c6 OC3A/-OC4A are a 16 and 8/10 bit timer. Inverse of pin 10 OCR4A PWM
-                            // &OCR3A would be an independent counter, 
+#define DIO9_PWM     &OCR3AL  // inverse of DIO10_PWM
 #define DIO9_DDR     DDRC
 
 #define DIO10_PIN    PINC7
@@ -134,8 +131,7 @@ pins
 #define DIO11_PIN    PIND6
 #define DIO11_RPORT  PIND
 #define DIO11_WPORT  PORTD
-// note that this PWM is true on not-OCR4D  // Complimentary signal of DIO12 PWM
-#define DIO11_PWM    NULL   // could be &OCR4D, but isn't independent of DIO12
+#define DIO11_PWM    NULL  // inverse of DIO12_PWM
 #define DIO11_DDR    DDRD
 
 #define DIO12_PIN    PIND7
@@ -153,7 +149,7 @@ pins
 #define DIO14_PIN    PINB5
 #define DIO14_RPORT  PINB
 #define DIO14_WPORT  PORTB
-#define DIO14_PWM    NULL  // &OCR4BL is inverse complimentary signal of DIO15_PWM
+#define DIO14_PWM    NULL  // inverse of DIO15_PWM
 #define DIO14_DDR    DDRB
 
 #define DIO15_PIN    PINB6
@@ -293,7 +289,7 @@ pins
 #define AIO10_WPORT  PORTD
 #define AIO10_PWM    NULL
 #define AIO10_DDR    DDRD
-#define AIO10_ADC     10
+#define AIO10_ADC    10
 
 #define AIO11_PIN    PIND4
 #define AIO11_RPORT  PIND

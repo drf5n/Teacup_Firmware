@@ -5,11 +5,8 @@
 #include	<stdint.h>
 #include "temp.h"
 
-#define	enable_heater()		heater_set(0, 64)
-#define	disable_heater()	heater_set(0, 0)
-
 #undef DEFINE_HEATER
-#define DEFINE_HEATER(name, pin) HEATER_ ## name,
+#define DEFINE_HEATER(name, pin, pwm) HEATER_ ## name,
 typedef enum
 {
 	#include "config.h"

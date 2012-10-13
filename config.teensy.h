@@ -61,6 +61,8 @@
 
 	valid range = 20 to 4'0960'000 (0.02 to 40960 steps/mm)
 
+	all numbers are integers, so no decimal point, please :-)
+
 T5=5mm, T2.5=2.5mm, MXL=0.08=2.032mm XL=1/5"=5.08mm
 
 T2.5mm belt w small, 10 (of 10-15 tooth pulley:
@@ -382,9 +384,9 @@ New plan:
 	#define DEFINE_TEMP_SENSOR(...)
 #endif
 
-//                 name       type          pin		additional
-DEFINE_TEMP_SENSOR(extruder,	TT_THERMISTOR,	AIO0,	THERMISTOR_EXTRUDER)
-DEFINE_TEMP_SENSOR(bed,		TT_THERMISTOR,	AIO1,	THERMISTOR_EXTRUDER)
+//                 name       type            pin        additional
+DEFINE_TEMP_SENSOR(extruder,  TT_THERMISTOR,  AIO0,      THERMISTOR_EXTRUDER)
+DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO1,      THERMISTOR_EXTRUDER)
 // "noheater" is a special name for a sensor which doesn't have a heater.
 // Use "M105 P#" to read it, where # is a zero-based index into this list.
 // DEFINE_TEMP_SENSOR(noheater,  TT_THERMISTOR,  1,            0)
@@ -428,12 +430,12 @@ DEFINE_TEMP_SENSOR(bed,		TT_THERMISTOR,	AIO1,	THERMISTOR_EXTRUDER)
 	#define DEFINE_HEATER(...)
 #endif
 
-//               name      port   pin    pwm
-DEFINE_HEATER(extruder,	DIO4)
-DEFINE_HEATER(bed,	DIO6)
-// DEFINE_HEATER(fan,			PORTB, PINB4, OCR0B)
-// DEFINE_HEATER(chamber,	PORTD, PIND7, OCR2A)
-// DEFINE_HEATER(motor,		PORTD, PIND6, OCR2B)
+//            name      port
+DEFINE_HEATER(extruder, DIO6)
+DEFINE_HEATER(bed,      DIO4)
+// DEFINE_HEATER(fan,      PINB4)
+// DEFINE_HEATER(chamber,  PIND7)
+// DEFINE_HEATER(motor,    PIND6)
 
 /// and now because the c preprocessor isn't as smart as it could be,
 /// uncomment the ones you've listed above and comment the rest.
