@@ -89,6 +89,17 @@ PROGID = stk500v2
 
 ##############################################################################
 #                                                                            #
+# If using the LUFA USB module, (e.g, at90usb1287, atmega32u4),  define the  #
+# LUFA board here.  See LUFA/trunk/LUFA/Common/BoardTypes.h for options.     #
+#                                                                            #
+# Will be ignored for non-usb chips.                                         #
+#                                                                            #
+##############################################################################
+
+LUFA_BOARD = NONE
+
+##############################################################################
+#                                                                            #
 # These defaults should be ok, change if you need to                         #
 #                                                                            #
 ##############################################################################
@@ -117,7 +128,7 @@ ifneq (,$(findstring u4,$(MCU_TARGET)))
 USE_LUFA = true
 endif
 
- USE_TEENSY = true
+# USE_TEENSY = true
 ifdef USE_LUFA
   ifdef USE_TEENSY
     SOURCES += serial_teensy.c usb_serial.c
@@ -126,6 +137,9 @@ ifdef USE_LUFA
     LIBS += -llufa_serial
     SUBDIRS += lufa_serial
     LIBDEPS += lufa_serial/liblufa_serial.a
+    export MCU = $(MCU_TARGET)
+    export F_CPU
+    export BOARD = $(LUFA_BOARD)
   endif
 else
   SOURCES += serial.c
