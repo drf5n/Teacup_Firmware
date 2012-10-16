@@ -54,7 +54,7 @@
 
 		#include <LUFA/Version.h>
 		#include <LUFA/Drivers/USB/USB.h>
-		#include <LUFA/Drivers/Board/Joystick.h>
+//		#include <LUFA/Drivers/Board/Joystick.h>
 		#include <LUFA/Drivers/Board/LEDs.h>
 
 	/* Macros: */
