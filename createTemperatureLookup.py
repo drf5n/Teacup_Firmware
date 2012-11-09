@@ -133,6 +133,7 @@ def main(argv):
 	t = Thermistor(r0, t0, beta, r1, r2,vcc,vadc)
 
 	adcs = range(min_adc, max_adc, increment);
+	adcs.append(max_adc)
 #	adcs = [1, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 110, 130, 150, 190, 220,  250, 300]
 
 	#Chop of negative temperatures (as we're using a unsigned 16-bit value for temp)
@@ -158,7 +159,8 @@ def main(argv):
 	print "// may decide that the effort isn't worth it. Who cares if it's reporting the \"right\" temperature as long as it's"
 	print "// keeping the temperature steady enough to print, right?"
 	print "// Temp*%s table from https://github.com/triffid/Teacup_Firmware/blob/master/createTemperatureLookup.py" %mult
-	print "// ./createTemperatureLookup.py --r0=%s --t0=%s --r1=%s --r2=%s --beta=%s --max-adc=%s" % (r0, t0, r1, r2, beta, max_adc)
+	print "// ./createTemperatureLookup.py --r0=%s --t0=%s --r1=%s --r2=%s --beta=%s --max-adc=%s --min_adc=%s --multiplier=%s --vadc=%s" % (
+		r0, t0, r1, r2, beta, max_adc, min_adc, mult, vadc)
 	print "// r0: %s" % (r0)
 	print "// t0: %s" % (t0)
 	print "// r1: %s (parallel with rTherm)" % (r1)
