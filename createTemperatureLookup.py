@@ -8,15 +8,15 @@
 #	temps are now in 14.2 fixed point notation (i.e. measured in quarter-degrees)
 #	temps are not permitted to be negative (BUG:may result in numtemps fewer than requested)
 #	bugfix: --num-temps command line option works.
-# 2012-11-08, DaveX: Modified to add --vadc= and --vcc= and to print per-ADC comments  
+# 2012-11-08, DaveX: Modified to add  --vcc=, --min_adc=, --mult and to print per-ADC comments  
 
 """Thermistor Value Lookup Table Generator
 
 Generates lookup to temperature values for use in a microcontroller in C format based on: 
-http://hydraraptor.blogspot.com/2007/10/measuring-temperature-easy-way.html
+  http://hydraraptor.blogspot.com/2007/10/measuring-temperature-easy-way.html
 
 The main use is for Arduino programs that read data from the circuit board described here:
-2http://make.rrrf.org/ts-1.0 or http://reprap.org/wiki/Temperature_Sensor_2_0
+  http://make.rrrf.org/ts-1.0 or http://reprap.org/wiki/Temperature_Sensor_2_0
 
 Usage: python createTemperatureLookup.py [options]
 
