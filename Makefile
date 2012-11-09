@@ -92,7 +92,8 @@ PROGID = stk500v2
 # If using the LUFA USB module, (e.g, at90usb1287, atmega32u4),  define the  #
 # LUFA board here.  See LUFA/trunk/LUFA/Common/BoardTypes.h for options.     #
 #                                                                            #
-# Will be ignored for non-usb chips.                                         #
+# NONE seems to be OK.  Choose one that matched your chip is you want LUFA   #
+# to control your LEDs or other board-specific intrefaces.                   #
 #                                                                            #
 ##############################################################################
 
