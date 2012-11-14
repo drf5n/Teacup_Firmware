@@ -109,6 +109,9 @@ PROGRAM = mendel
 
 SOURCES = $(PROGRAM).c gcode_parse.c gcode_process.c dda.c dda_maths.c dda_queue.c timer.c temp.c sermsg.c watchdog.c debug.c sersendf.c heater.c analog.c intercom.c pinio.c clock.c home.c crc.c delay.c
 
+#HEADERFILES= $(wildcard *.h)
+
+
 ARCH = avr-
 CC = $(ARCH)gcc
 OBJDUMP = $(ARCH)objdump
@@ -129,7 +132,7 @@ ifneq (,$(findstring u4,$(MCU_TARGET)))
 USE_LUFA = true
 endif
 
-# USE_TEENSY = true
+USE_TEENSY = true
 ifdef USE_LUFA
   ifdef USE_TEENSY
     SOURCES += serial_teensy.c usb_serial.c
@@ -184,7 +187,7 @@ program-teensy: $(PROGRAM).hex config.h
 	teensy_loader_cli -mmcu=$(MCU_TARGET) -w -v $<
 
 clean: clean-subdirs
-	rm -rf *.o *.elf *.lst *.map *.sym *.lss *.eep *.srec *.bin *.hex *.al *.i *.s *~
+	rm -rf *.o *.elf *.lst *.map *.sym *.lss *.eep *.srec *.bin *.hex *.al *.i *.s *~ .depend
 
 clean-subdirs:
 	@for dir in $(SUBDIRS); do \
@@ -210,9 +213,19 @@ doc: Doxyfile *.c *.h
 functionsbysize: $(OBJ)
 	@avr-objdump -h $^ | grep '\.text\.' | perl -ne '/\.text\.(\S+)\s+([0-9a-f]+)/ && printf "%u\t%s\n", eval("0x$$2"), $$1;' | sort -n
 
-%.o: %.c config.h Makefile
+%.o: %.c config.h Makefile 
 	@echo "  CC        $@"
 	@$(CC) -c $(CFLAGS) -Wa,-adhlns=$(<:.c=.al) -o $@ $(subst .o,.c,$@)
+
+
+depend: .depend
+
+.depend: $(SOURCES)
+	rm -f ./.depend
+	$(CC) $(CFLAGS) -MM $^ > ./.depend;
+
+# pull in dependency info for *existing* .o files
+-include .depend
 
 %.elf: $(OBJ)
 	@echo "  LINK      $@"
