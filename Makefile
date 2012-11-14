@@ -89,18 +89,6 @@ PROGID = stk500v2
 
 ##############################################################################
 #                                                                            #
-# If using the LUFA USB module, (e.g, at90usb1287, atmega32u4),  define the  #
-# LUFA board here.  See LUFA/trunk/LUFA/Common/BoardTypes.h for options.     #
-#                                                                            #
-# NONE seems to be OK.  Choose one that matched your chip is you want LUFA   #
-# to control your LEDs or other board-specific intrefaces.                   #
-#                                                                            #
-##############################################################################
-
-LUFA_BOARD = NONE
-
-##############################################################################
-#                                                                            #
 # These defaults should be ok, change if you need to                         #
 #                                                                            #
 ##############################################################################
@@ -108,9 +96,6 @@ LUFA_BOARD = NONE
 PROGRAM = mendel
 
 SOURCES = $(PROGRAM).c gcode_parse.c gcode_process.c dda.c dda_maths.c dda_queue.c timer.c temp.c sermsg.c watchdog.c debug.c sersendf.c heater.c analog.c intercom.c pinio.c clock.c home.c crc.c delay.c serial.c
-
-#HEADERFILES= $(wildcard *.h)
-
 
 ARCH = avr-
 CC = $(ARCH)gcc
@@ -150,13 +135,6 @@ OBJ = $(patsubst %.c,%.o,${SOURCES})
 .PRECIOUS: %.o %.elf
 
 all: config.h subdirs $(PROGRAM).hex $(PROGRAM).lst $(PROGRAM).sym size
-
-# get teensy's usb_serial from http://www.pjrc.com/teensy/usb_serial.zip at http://www.pjrc.com/teensy/usb_serial.html
-# e.g.:
-usb_serial.c: 
-	wget http://www.pjrc.com/teensy/usb_serial.zip
-	unzip usb_serial.zip
-	cp usb_serial/usb_serial.c usb_serial/usb_serial.h . 
 
 $(PROGRAM).elf: $(LIBDEPS)
 
@@ -213,7 +191,7 @@ depend: .depend
 	rm -f ./.depend
 	$(CC) $(CFLAGS) -MM $^ > ./.depend;
 
-# pull in dependency info for *existing* .o files
+# pull in dependency info for SOURCES files
 -include .depend
 
 %.elf: $(OBJ)
