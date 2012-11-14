@@ -32,7 +32,7 @@ Options:
   --min-adc=... 	the minimum ADC reading to use. 
   --vadc=...            ADC reference voltage (high leg of R2) same as Vcc
   --vcc=...             Voltage divider supply (high leg of R2)  Unused
-  --multitable          Format data as one of an array of tables 
+  --table               Format data as one of an array of tables 
 
 It is suggested to generate more values than you need, and delete some of the ones in the ranges
 that aren't interesting. This will improve accuracy in the temperature ranges that are important to you.
@@ -100,7 +100,7 @@ def main(argv):
 	except getopt.GetoptError:
 		usage()
 		sys.exit(2)
-        
+
 	for opt, arg in opts:
 		if opt in ("-h", "--help"):
 			usage()

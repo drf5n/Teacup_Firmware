@@ -51,8 +51,8 @@
 #define OC4D         DIO12
 
 // change for your board
-#define DEBUG_LED        DIO22 /* led D11 red */
-#define DEBUG_LED_PIN    DIO22
+#define DEBUG_LED        DIO11 /* led D11 red */
+#define DEBUG_LED_PIN    DIO11
 
 /*
 pins
@@ -115,7 +115,6 @@ pins
 #define DIO8_PWM     NULL
 #define DIO8_DDR     DDRD
 
-
 #define DIO9_PIN     PINC6
 #define DIO9_RPORT   PINC
 #define DIO9_WPORT   PORTC
@@ -125,7 +124,8 @@ pins
 #define DIO10_PIN    PINC7
 #define DIO10_RPORT  PINC
 #define DIO10_WPORT  PORTC
-#define DIO10_PWM    &OCR4A  // inverse.  pin 10/c7 is on a 8/10 bit timer 4 and share the same register as inverses
+// pin 10/c7 is on a 8/10 bit timer 4 and share the register with inverses
+#define DIO10_PWM    &OCR4A
 #define DIO10_DDR    DDRC
 
 #define DIO11_PIN    PIND6

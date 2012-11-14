@@ -69,6 +69,12 @@ struct {
 	uint8_t						heater_output;					///< this is the PID value we eventually send to the heater
 } heaters_runtime[NUM_HEATERS];
 
+#ifdef BANG_BANG
+	#define HEATER_THRESHOLD ((BANG_BANG_ON + BANG_BANG_OFF) / 2)
+#else
+	#define HEATER_THRESHOLD 8
+#endif
+
 /// default scaled P factor, equivalent to 8.0
 #define		DEFAULT_P				8192
 /// default scaled I factor, equivalent to 0.5
@@ -201,7 +207,7 @@ void heater_init() {
 						TCCR4A |= MASK(COM4C1);
 						break;
 					#else
-					// 10 bit timer, e.g. atmega32U4
+					// 10 bit timer
 					case (uint16_t) &OCR4A:
 						TCCR4A |= MASK(COM4A1);
 						break;
@@ -349,7 +355,7 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
         #else //BANG_BANG
 		if (current_temp >= target_temp)
 			pid_output = BANG_BANG_OFF;
-		else
+		else //BANG_BANG
 			pid_output = BANG_BANG_ON;
 	#endif
 
@@ -432,7 +438,7 @@ void heater_set(heater_t index, uint8_t value) {
 		#endif
 	}
 	else {
-		if (value >= ((BANG_BANG_ON + BANG_BANG_OFF) / 2))
+		if (value >= HEATER_THRESHOLD)
 			*(heaters[index].heater_port) |= MASK(heaters[index].heater_pin);
 		else
 			*(heaters[index].heater_port) &= ~MASK(heaters[index].heater_pin);

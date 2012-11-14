@@ -2,7 +2,7 @@
 /* attempt by drf@vims.edu 2012-01-09 to fit TeaCup into a $16 teensy from htpp://www.pjrc.com/teensy/ */
 
 /** \file
-	\brief Teensy 2.0 configuration
+	\brief Teensy 2.0 configuration.
 */
 
 /*
@@ -73,24 +73,16 @@ MXL 2.032 mm/tooth, 29
  Z       200*2       / 1           / 1           * 1000  = 400000  # half-step for noise
  Extrude through a Wades' 10:43 with a M8 hobbed bolt:
          steps/revM  * revM/revO    / (dia * circ/rev) *  mm/m
- E       200*1*4    *43/10         / (8  *   3.14159)  * 1000 = 136873.4
+ E       200*1*4     * 43/10        / (8   *  3.14159) *  1000 = 136873.4
          mm/m        / (mm/rev ext)   (rev mot/rev ext)  step/revmot
- E       1000      / (8 * 3.14159)  * 43/10             * 200 * 4 = 136873.4
-
-
-
+ E       1000        / (8 * 3.14159)  * 43/10           * 200 * 4 = 136873.4
 */
 #define	STEPS_PER_M_X				        13576
 #define	STEPS_PER_M_Y					13576
 #define	STEPS_PER_M_Z				        400000
 
 /// http://blog.arcol.hu/?p=157 may help with this one
-//#define	STEPS_PER_M_E					547494
-// 547494*30/22.84 = 719125
-//#define	STEPS_PER_M_E				        719125
-//#define	STEPS_PER_M_E				        136873
-// Recalibrate for 30mm extrusion gets 23.005mm:  136873 * 30/23.84 = 179781
-#define	STEPS_PER_M_E				        179781  // 2012-10-13
+#define	STEPS_PER_M_E				        160423
 
 /*
 	Values depending on the capabilities of your stepper motors and other mechanics.
@@ -223,29 +215,33 @@ maxMMperMin/60*stepsPerM/1000  # == 1556.941 1556.941 1553.333 2030.718
 
 Teensy http://www.pjrc.com/teensy ATMega64U4 carrier:
 
-DaveX plan for Wallace 2012-10-13:  (My d0 pin is burned out)
-                                         USB
-                     GND       GND |-----#####-----| +5V              ATX +5SB
-               ATX PS_ON         0 |b0   #####   F0| 21 A0            Extruder TC
-                   X_MIN         1 |b1           f1| 20 A1            Bed TC
-                   Y_MIN         2 |b2  /=e6     f4| 19 A2            Stepper -ENABLE (or -SLEEP)
-                   Z_MIN         3 |b3 *      *  f5| 18 A3            STEP X
-                           PWM   4 |b7  aref=/   f6| 17 A4            DIR X
-                           PWM   5 |d0           f7| 16 A5            STEP Y
-                                 6 |d1           b6| 15 A6  PWM       DIR Y
-                                 7 |d2   V G R   b5| 14 A7            STEP Z
-                     Fan         8 |d3 d c n S d b4| 13 A8            DIR Z
-                Bed Heat   PWM   9 |d6 5 c d T 4 d7| 12 A9  PWM       STEP E
-           Extruder Heat   PWM  10 |d7 * * * * * d6| 11 A10 (led)     DIR E
-                                   --------------------
-                                    23 ^      \ \----22 A11
-                                                \------ RST
+DaveX plan for Wallace:
+                               USB
+           GND       GND |-----#####-----| +5V              ATX +5SB
+     ATX PS_ON         0 |b0   #####   F0| 21 A0            Extruder TC
+         X_MIN         1 |b1           f1| 20 A1            Bed TC
+         Y_MIN         2 |b2  /=e6     f4| 19 A2            Stepper -ENABLE (or -SLEEP)
+         Z_MIN         3 |b3 *      *  f5| 18 A3            STEP X
+                 PWM   4 |b7  aref=/   f6| 17 A4            DIR X
+                 PWM   5 |d0           f7| 16 A5            STEP Y
+                       6 |d1           b6| 15 A6  PWM       DIR Y
+                       7 |d2   V G R   b5| 14 A7            STEP Z
+           Fan         8 |d3 d c n S d b4| 13 A8            DIR Z
+      Bed Heat   PWM   9 |d6 5 c d T 4 d7| 12 A9  PWM       STEP E
+ Extruder Heat   PWM  10 |d7 * * * * * d6| 11 A10 (led)     DIR E
+                         --------------------
+                          23 ^      \ \----22 A11
+                                      \------ RST
 
       Interior E6: 24, AIN0, INT6
       Interior Aref : Aref
       End d5 : 23
       End d4 : 22, A1
-      PWM might be possible on pins PB5/DIO14/AIO7 and PD6/DIO11/AIO10 pins but they are complementary to the PWMs on the successive pins, if \             you reserve timer/counter1 for Teacup.  Avoid trying to use these two inverse PWMs, and try to use the other 6 PWMs instead. 
+
+PWM might be possible on pins PB5/DIO14/AIO7 and PD6/DIO11/AIO10 pins but they
+are complementary to the PWMs on the successive pins, if you reserve
+timer/counter1 for Teacup. Avoid trying to use these two inverse PWMs, and try
+to use the other 6 PWMs instead.
 */
 
 #include	"arduino.h"
@@ -351,7 +347,7 @@ DaveX plan for Wallace 2012-10-13:  (My d0 pin is burned out)
 // #define	TEMP_AD595
 // #define	TEMP_PT100
 // #define	TEMP_INTERCOM
-#define	TEMP_NONE
+// #define	TEMP_NONE
 
 /***************************************************************************\
 *                                                                           *
@@ -377,13 +373,9 @@ DaveX plan for Wallace 2012-10-13:  (My d0 pin is burned out)
 	#define DEFINE_TEMP_SENSOR(...)
 #endif
 
-//                 name       type          pin		additional
-DEFINE_TEMP_SENSOR(extruder,	TT_THERMISTOR,	AIO0,	THERMISTOR_EXTRUDER)
-DEFINE_TEMP_SENSOR(bed,		TT_THERMISTOR,	AIO1,	THERMISTOR_EXTRUDER)
-//DEFINE_TEMP_SENSOR(spindle,		TT_NONE,	AIO1,	THERMISTOR_EXTRUDER)
-//DEFINE_TEMP_SENSOR(chamber,		TT_NONE,	AIO1,	THERMISTOR_EXTRUDER)
-//DEFINE_TEMP_SENSOR(motor,		TT_NONE,	AIO1,	THERMISTOR_EXTRUDER)
-//DEFINE_TEMP_SENSOR(servo,		TT_NONE,	AIO1,	THERMISTOR_EXTRUDER)
+//                 name       type            pin        additional
+DEFINE_TEMP_SENSOR(extruder,  TT_THERMISTOR,  AIO0,      THERMISTOR_EXTRUDER)
+DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO1,      THERMISTOR_BED)
 // "noheater" is a special name for a sensor which doesn't have a heater.
 // Use "M105 P#" to read it, where # is a zero-based index into this list.
 // DEFINE_TEMP_SENSOR(noheater,  TT_THERMISTOR,  1,            0)
@@ -431,14 +423,12 @@ DEFINE_TEMP_SENSOR(bed,		TT_THERMISTOR,	AIO1,	THERMISTOR_EXTRUDER)
 	#define DEFINE_HEATER(...)
 #endif
 
-//            name      port    pwm
-DEFINE_HEATER(extruder,	 DIO10, 1)
-DEFINE_HEATER(bed,	 DIO9,  1)
-DEFINE_HEATER(fan,	 DIO8,  0)
-//DEFINE_HEATER(spindle, DIO4,  1)
-//DEFINE_HEATER(chamber, DIO5,  1)
-//DEFINE_HEATER(motor,	 DIO12, 1)
-//DEFINE_HEATER(servo,   DIO15, 1)
+//            name      port   pwm
+DEFINE_HEATER(extruder, DIO10, 1)
+DEFINE_HEATER(bed,      DIO9,  1)
+DEFINE_HEATER(fan,      DIO8,  0)
+// DEFINE_HEATER(chamber,  PIND7, 1)
+// DEFINE_HEATER(motor,    PIND6, 1)
 
 /// and now because the c preprocessor isn't as smart as it could be,
 /// uncomment the ones you've listed above and comment the rest.
@@ -448,7 +438,7 @@ DEFINE_HEATER(fan,	 DIO8,  0)
 
 #define	HEATER_EXTRUDER HEATER_extruder
 #define HEATER_BED HEATER_bed
-// #define HEATER_FAN HEATER_fan
+#define HEATER_FAN HEATER_fan
 // #define HEATER_CHAMBER HEATER_chamber
 // #define HEATER_MOTOR HEATER_motor
 
@@ -504,7 +494,7 @@ BANG_BANG
 drops PID loop from heater control, reduces code size significantly (1300 bytes!)
 may allow DEBUG on '168
 */
-// #define	BANG_BANG
+#define	BANG_BANG
 /** \def BANG_BANG_ON
 BANG_BANG_ON
 PWM value for 'on'
@@ -617,17 +607,15 @@ PWM value for 'off'
 * OCR5BL - PL4 - DIO45                                                      *
 * OCR5CL - PL5 - DIO44                                                      *
 *                                                                           *
-* For the Teensy atmega32U, timer pin/mappings are as follows               *
+* For the atmega32U, timer pin/mappings are as follows                      *
 *                                                                           *
-* Timer 1 is used for stepping, so OC1A and OC1B aren't good PWMs           *
-*                                      *** Avoid the inverse PWMs  ***      *
 * OCR0A - PB7 - DIO4                                                        *
 * OCR0B - PD0 - DIO5                                                        *
 * OCR3A - PC6 - DIO9                                                        *
-* OCR4A - PC7 - DIO10       
-*~OCRAD - PD6 - DIO11 - AIO10          ***   inverse of OCR4D ***           *
+* OCR4A - PC7 - DIO10                                                       *
+*~OCRAD - PD6 - DIO11 - AIO10    *** inverse of OCR4D (avoid it) ***        *
 * OCR4D - PD7 - DIO12 - AIO9                                                *
-*~OCRAB - PB5 - DIO14 - AIO7           ***   inverse of OCR4B ***           *
+*~OCRAB - PB5 - DIO14 - AIO7     *** inverse of OCR4B (avoid it) ***        *
 * OCR4B - PB6 - DIO15 - AIO6                                                *
 *                                                                           *
 \***************************************************************************/

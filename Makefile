@@ -107,7 +107,7 @@ LUFA_BOARD = NONE
 
 PROGRAM = mendel
 
-SOURCES = $(PROGRAM).c gcode_parse.c gcode_process.c dda.c dda_maths.c dda_queue.c timer.c temp.c sermsg.c watchdog.c debug.c sersendf.c heater.c analog.c intercom.c pinio.c clock.c home.c crc.c delay.c
+SOURCES = $(PROGRAM).c gcode_parse.c gcode_process.c dda.c dda_maths.c dda_queue.c timer.c temp.c sermsg.c watchdog.c debug.c sersendf.c heater.c analog.c intercom.c pinio.c clock.c home.c crc.c delay.c serial.c
 
 #HEADERFILES= $(wildcard *.h)
 
@@ -120,33 +120,22 @@ OBJCOPY = $(ARCH)objcopy
 OPTIMIZE = -Os -ffunction-sections -finline-functions-called-once -mcall-prologues
 # OPTIMIZE = -O0
 CFLAGS = -g -Wall -Wstrict-prototypes $(OPTIMIZE) -mmcu=$(MCU_TARGET) $(DEFS) -std=gnu99 -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -save-temps -Winline
+CFLAGS += -fno-move-loop-invariants
+CFLAGS += -fno-tree-scev-cprop
 LDFLAGS = -Wl,--as-needed -Wl,--gc-sections
 LIBS = -lm
 LIBDEPS =
 SUBDIRS =
 
 ifneq (,$(findstring usb,$(MCU_TARGET)))
-USE_LUFA = true
+USE_USB = true
 endif
 ifneq (,$(findstring u4,$(MCU_TARGET)))
-USE_LUFA = true
+USE_USB = true
 endif
-
-USE_TEENSY = true
-ifdef USE_LUFA
-  ifdef USE_TEENSY
-    SOURCES += serial_teensy.c usb_serial.c
-  else
-    LDFLAGS += -Llufa_serial
-    LIBS += -llufa_serial
-    SUBDIRS += lufa_serial
-    LIBDEPS += lufa_serial/liblufa_serial.a
-    export MCU = $(MCU_TARGET)
-    export F_CPU
-    export BOARD = $(LUFA_BOARD)
-  endif
-else
-  SOURCES += serial.c
+ifdef USE_USB
+CFLAGS += -DUSE_USB
+SOURCES += usb_serial.c
 endif
 
 ifeq ($(PROGBAUD),0)
