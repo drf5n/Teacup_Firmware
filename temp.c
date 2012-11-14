@@ -317,7 +317,17 @@ void temp_sensor_tick() {
 		if (temp_sensors[i].heater < NUM_HEATERS) {
 			heater_tick(temp_sensors[i].heater, temp_sensors[i].temp_type, temp_sensors_runtime[i].last_read_temp, temp_sensors_runtime[i].target_temp);
 		}
+                #ifdef  DEBUG
+                if (DEBUG_PID && (debug_flags & DEBUG_USER))
+                    sersendf_P(PSTR("?? DU temp: {%d %d %d.%d}"),i,temp_sensors_runtime[i].last_read_temp, 
+			temp_sensors_runtime[i].last_read_temp/4, (temp_sensors_runtime[i].last_read_temp & 0x03 )*25 );
+                #endif
+
 	}
+                #ifdef  DEBUG
+                if (DEBUG_PID && (debug_flags & DEBUG_USER))
+                    sersendf_P(PSTR("\n"));
+                #endif
 }
 
 /// report whether all temp sensors are reading their target temperatures
