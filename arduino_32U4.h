@@ -51,8 +51,8 @@
 #define OC4D         DIO12
 
 // change for your board
-#define DEBUG_LED        DIO11 /* led D11 red */
-#define DEBUG_LED_PIN    DIO11
+#define DEBUG_LED        DIO22 /* led D11 red */
+#define DEBUG_LED_PIN    DIO22
 
 /*
 pins
