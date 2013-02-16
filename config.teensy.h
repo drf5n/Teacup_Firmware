@@ -177,7 +177,35 @@ MXL 2.032 mm/tooth, 29
 */
 // #define ACCELERATION_TEMPORAL
 
+/** \def LOOKAHEAD
+ * Define this to enable look-ahead during *ramping* acceleration to smoothly transition between moves
+ * instead of performing a dead stop every move.
+ * Enabling look-ahead requires ~3600 bytes of flash memory.
+ */
+#define LOOKAHEAD
+#if !defined(ACCELERATION_RAMPING) && defined(LOOKAHEAD)
+#error "LOOKAHEAD requires ACCELERATION_RAMPING."
+#endif
 
+
+/** \def LOOKAHEAD_MAX_JERK_XY
+ * When performing look-ahead, we need to decide what an acceptable jerk to the mechanics is when we
+ * (instantly) change direction. Units: um - sane values are 5 to 200
+ */
+#define LOOKAHEAD_MAX_JERK_XY 10
+
+/** \def LOOKAHEAD_MAX_JERK_E
+ * When joining moves with different extrusion rates, define the maximum jerk for the extruder.
+ */
+#define LOOKAHEAD_MAX_JERK_E 10
+
+
+/** \def LOOKAHEAD_DEBUG
+ * When defined, some sanity tests are enabled to aid in debugging the lookahead
+ * functionality. Since these actually terminate the firmware if something goes wrong,
+ * do not enable this unless you are debugging!
+ */
+//#define LOOKAHEAD_DEBUG
 
 /***************************************************************************\
 *                                                                           *

@@ -181,7 +181,7 @@ void dda_join_moves(DDA *prev, DDA *current) {
 	// Note: we assume 'current' will not be dispatched while this function runs, so we do not to
 	// back up the move settings: they will remain constant.
 	uint32_t this_F_start, this_rampup, this_rampdown;
-	enum axis_e prev_lead;
+	enum axis_e ;  // todo: prev_lead;
 	int32_t jerk, jerk_e;				// Expresses the forces if we would change directions at full speed
 	static uint32_t la_cnt = 0;			// Counter: how many moves did we join?
 	#ifdef LOOKAHEAD_DEBUG
@@ -224,7 +224,7 @@ void dda_join_moves(DDA *prev, DDA *current) {
 			prev_rampup = prev->rampup_steps;
 			prev_rampdown = prev->rampdown_steps;
 			prev_total_steps = prev->total_steps;
-			prev_lead = prev->lead;
+	//		prev_lead = prev->lead;  // todo
 		}
 
 		// The initial crossing speed is the minimum between both target speeds

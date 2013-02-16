@@ -183,6 +183,10 @@ MXL 2.032 mm/tooth, 29
  * Enabling look-ahead requires ~3600 bytes of flash memory.
  */
 #define LOOKAHEAD
+#if !defined(ACCELERATION_RAMPING) && defined(LOOKAHEAD)
+#error "LOOKAHEAD requires ACCELERATION_RAMPING."
+#endif
+
 
 /** \def LOOKAHEAD_MAX_JERK_XY
  * When performing look-ahead, we need to decide what an acceptable jerk to the mechanics is when we
