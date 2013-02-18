@@ -182,11 +182,11 @@ MXL 2.032 mm/tooth, 29
  * instead of performing a dead stop every move.
  * Enabling look-ahead requires ~3600 bytes of flash memory.
  */
-#define LOOKAHEAD
-#if !defined(ACCELERATION_RAMPING) && defined(LOOKAHEAD)
+// #define LOOKAHEAD
+#if defined(LOOKAHEAD)
+# if !defined(ACCELERATION_RAMPING) 
 #error "LOOKAHEAD requires ACCELERATION_RAMPING."
 #endif
-
 
 /** \def LOOKAHEAD_MAX_JERK_XY
  * When performing look-ahead, we need to decide what an acceptable jerk to the mechanics is when we
@@ -199,13 +199,15 @@ MXL 2.032 mm/tooth, 29
  */
 #define LOOKAHEAD_MAX_JERK_E 10
 
-
 /** \def LOOKAHEAD_DEBUG
  * When defined, some sanity tests are enabled to aid in debugging the lookahead
  * functionality. Since these actually terminate the firmware if something goes wrong,
  * do not enable this unless you are debugging!
  */
 //#define LOOKAHEAD_DEBUG
+//#define LOOKAHEAD_DEBUG_VERBOSE
+
+#endif //LOOKAHEAD
 
 /***************************************************************************\
 *                                                                           *
