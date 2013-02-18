@@ -86,9 +86,6 @@ void dda_new_startpoint(void) {
 void dda_create(DDA *dda, TARGET *target, DDA *prev_dda) {
 	uint32_t	steps, x_delta_um, y_delta_um, z_delta_um, e_delta_um;
 	uint32_t	distance, c_limit, c_limit_calc;
-	#ifdef ACCELERATION_RAMPING
-	dda->lead = X;						// Used to keep track of the leading axis (= axis with most steps)
-	#endif
 	#ifdef LOOKAHEAD
 	static uint8_t idcnt = 0;			// Number the moves to identify them; allowed to overflow
 	#endif
@@ -157,24 +154,12 @@ void dda_create(DDA *dda, TARGET *target, DDA *prev_dda) {
 		sersendf_P(PSTR("%ld,%ld,%ld,%ld] ["), target->X - startpoint.X, target->Y - startpoint.Y, target->Z - startpoint.Z, target->E - startpoint.E);
 
 	dda->total_steps = dda->x_delta;
-	if (dda->y_delta > dda->total_steps) {
+	if (dda->y_delta > dda->total_steps)
 		dda->total_steps = dda->y_delta;
-		#ifdef ACCELERATION_RAMPING
-		dda->lead = Y;
-		#endif
-	}
-	if (dda->z_delta > dda->total_steps) {
+	if (dda->z_delta > dda->total_steps)
 		dda->total_steps = dda->z_delta;
-		#ifdef ACCELERATION_RAMPING
-		dda->lead = Z;
-		#endif
-	}
-	if (dda->e_delta > dda->total_steps) {
+	if (dda->e_delta > dda->total_steps)
 		dda->total_steps = dda->e_delta;
-		#ifdef ACCELERATION_RAMPING
-		dda->lead = E;
-		#endif
-	}
 
 	if (DEBUG_DDA && (debug_flags & DEBUG_DDA))
 		sersendf_P(PSTR("ts:%lu"), dda->total_steps);

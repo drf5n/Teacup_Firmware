@@ -181,7 +181,6 @@ void dda_join_moves(DDA *prev, DDA *current) {
 	// Note: we assume 'current' will not be dispatched while this function runs, so we do not to
 	// back up the move settings: they will remain constant.
 	uint32_t this_F_start, this_rampup, this_rampdown;
-	enum axis_e prev_lead;
 	int32_t jerk, jerk_e;				// Expresses the forces if we would change directions at full speed
 	static uint32_t la_cnt = 0;			// Counter: how many moves did we join?
 	#ifdef LOOKAHEAD_DEBUG
@@ -224,7 +223,6 @@ void dda_join_moves(DDA *prev, DDA *current) {
 			prev_rampup = prev->rampup_steps;
 			prev_rampdown = prev->rampdown_steps;
 			prev_total_steps = prev->total_steps;
-			prev_lead = prev->lead;
 		}
 
 		// The initial crossing speed is the minimum between both target speeds
@@ -358,7 +356,6 @@ void dda_join_moves(DDA *prev, DDA *current) {
 		// Forward check 2: test if we can actually reach the target speed in this move.
 		// If not: determine obtainable speed and adjust crossF accordingly. If that
 		// happens, a third (reverse) pass is needed to lower the speeds in the previous move...
-		//ramp_scaler = ACCELERATE_SCALER(current->lead);	// Use scaler for current leading axis
 		up = ACCELERATE_RAMP_LEN(current->endpoint.F) - ACCELERATE_RAMP_LEN(crossF);
 		down = ACCELERATE_RAMP_LEN(current->endpoint.F);
 		// Test if both the ramp up and ramp down fit within the move
@@ -415,7 +412,6 @@ void dda_join_moves(DDA *prev, DDA *current) {
 		// between this move and the previous move...
 		if(prev_F_end != crossF) {
 			// Third reverse pass: slow the previous move to end at the target crossing speed.
-			//ramp_scaler = ACCELERATE_SCALER(current->lead); //todo: prev_lead	// Use scaler for previous leading axis (again)
 			// Note: use signed values so we  can check if results go below zero
 			// Note 2: when up2 and/or down2 are below zero from the start, you found a bug in the logic above.
 			int32_t up2 = ACCELERATE_RAMP_LEN(prev_F) - ACCELERATE_RAMP_LEN(prev_F_start);
