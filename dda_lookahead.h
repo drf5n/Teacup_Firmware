@@ -5,19 +5,23 @@
 #include	"config.h"
 #include	"dda.h"
 
+// Note: the floating point bit is optimized away during compilation
+#define ACCELERATE_RAMP_LEN(speed) (((speed)*(speed)) / (uint32_t)((7200000.0f * ACCELERATION) / (float)STEPS_PER_M_X))
+
+#ifdef LOOKAHEAD
 #ifndef ACCELERATION_RAMPING
 // Only enable the lookahead bits if ramping acceleration is enabled
 #undef LOOKAHEAD
-#else
+#else // ACCELERATION_RAMPING
 // Sanity: make sure the defines are in place
 #ifndef LOOKAHEAD_MAX_JERK_XY
 #error Your config.h does not specify LOOKAHEAD_MAX_JERK_XY while LOOKAHEAD is enabled!
 #warning Try adding #define LOOKAHEAD_MAX_JERK_XY 10 to config.h
-#endif
+#endif  // LOOKAHEAD_MAX_JERK_XY
 #ifndef LOOKAHEAD_MAX_JERK_E
 #error Your config.h does not specify LOOKAHEAD_MAX_JERK_E while LOOKAHEAD is enabled!
 #warning Try adding #define LOOKAHEAD_MAX_JERK_E 10 to config.h
-#endif
+#endif // LOOKAHEAD_MAX_JERK_E
 
 // Sanity: the acceleration of Teacup is not implemented properly; as such we can only
 // do move joining when all axis use the same steps per mm. This is usually not an issue
@@ -26,8 +30,6 @@
 #error "Look-ahead requires steps per m to be identical on the X and Y axis (for now)"
 #endif
 
-// Note: the floating point bit is optimized away during compilation
-#define ACCELERATE_RAMP_LEN(speed) (((speed)*(speed)) / (uint32_t)((7200000.0f * ACCELERATION) / (float)STEPS_PER_M_X))
 // This is the same to ACCELERATE_RAMP_LEN but now the steps per m can be switched.
 // Note: use this with a macro so the float is removed by the preprocessor
 #define ACCELERATE_RAMP_SCALER(spm) (uint32_t)((7200000.0f * ACCELERATION) / (float)spm)
@@ -66,6 +68,7 @@ void dda_join_moves(DDA *prev, DDA *current);
 extern uint32_t lookahead_joined;
 extern uint32_t lookahead_timeout;
 
-#endif
+#endif // ACCELERATION_RAMPING
+#endif // LOOKAHEAD
 
 #endif /* DDA_LOOKAHEAD_H_ */

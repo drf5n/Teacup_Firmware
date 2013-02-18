@@ -183,10 +183,10 @@ MXL 2.032 mm/tooth, 29
  * Enabling look-ahead requires ~3600 bytes of flash memory.
  */
 #define LOOKAHEAD
-#if !defined(ACCELERATION_RAMPING) && defined(LOOKAHEAD)
+#if defined(LOOKAHEAD)
+# if !defined(ACCELERATION_RAMPING) 
 #error "LOOKAHEAD requires ACCELERATION_RAMPING."
 #endif
-
 
 /** \def LOOKAHEAD_MAX_JERK_XY
  * When performing look-ahead, we need to decide what an acceptable jerk to the mechanics is when we
@@ -199,13 +199,15 @@ MXL 2.032 mm/tooth, 29
  */
 #define LOOKAHEAD_MAX_JERK_E 10
 
-
 /** \def LOOKAHEAD_DEBUG
  * When defined, some sanity tests are enabled to aid in debugging the lookahead
  * functionality. Since these actually terminate the firmware if something goes wrong,
  * do not enable this unless you are debugging!
  */
 //#define LOOKAHEAD_DEBUG
+//#define LOOKAHEAD_DEBUG_VERBOSE
+
+#endif //LOOKAHEAD
 
 /***************************************************************************\
 *                                                                           *
@@ -268,7 +270,7 @@ to use the other 6 PWMs instead.
 /* starting down the left side for digital, and later down the right for analog */
 /* General layout: ccw from upper left: stops, heaters,  E,Z,Y,X,  temp sensors */
 
-//#define	PS_ON_PIN							DIO0
+#define	PS_ON_PIN							DIO0
 #define	STEPPER_ENABLE_PIN		DIO19
 #define	STEPPER_INVERT_ENABLE
 
@@ -284,7 +286,7 @@ to use the other 6 PWMs instead.
 
 #define	Y_STEP_PIN						DIO16
 #define	Y_DIR_PIN							DIO15
-#define	Y_MIN_PIN							DIO3
+#define	Y_MIN_PIN							DIO2
 //#define	Y_MAX_PIN							xxxx
 //#define	Y_ENABLE_PIN					xxxx
 //#define	Y_INVERT_DIR
@@ -294,7 +296,7 @@ to use the other 6 PWMs instead.
 
 #define	Z_STEP_PIN						DIO14
 #define	Z_DIR_PIN							DIO13
-#define	Z_MIN_PIN							DIO2
+#define	Z_MIN_PIN							DIO3
 //#define	Z_MAX_PIN							xxxx
 //#define	Z_ENABLE_PIN					DIO17
 //#define	Z_INVERT_DIR
@@ -500,7 +502,7 @@ DEFINE_HEATER(fan,      DIO8,  0)
 		WARNING: this WILL break most host-side talkers that expect particular responses from firmware such as reprap host and replicatorG
 		use with serial terminal or other suitable talker only.
 */
-// #define	DEBUG
+#define	DEBUG
 
 /** \def BANG_BANG
 BANG_BANG
@@ -525,6 +527,7 @@ PWM value for 'off'
 		however, a larger movebuffer will probably help with lots of short consecutive moves, as each move takes a bunch of math (hence time) to set up so a longer buffer allows more of the math to be done during preceding longer moves
 */
 #define	MOVEBUFFER_SIZE	8
+//#define	MOVEBUFFER_SIZE	9
 
 /** \def DC_EXTRUDER
 	DC extruder
