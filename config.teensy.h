@@ -502,7 +502,7 @@ DEFINE_HEATER(fan,      DIO8,  0)
 		WARNING: this WILL break most host-side talkers that expect particular responses from firmware such as reprap host and replicatorG
 		use with serial terminal or other suitable talker only.
 */
-#define	DEBUG
+//#define	DEBUG
 
 /** \def BANG_BANG
 BANG_BANG
