@@ -144,7 +144,7 @@ void dda_emergency_shutdown(PGM_P msg) {
 	serial_writestr_P(PSTR("error: emergency stop:"));
 	if(msg!=NULL) serial_writestr_P(msg);
 	serial_writestr_P(PSTR("\r\n"));
-	delay(20000);		// Delay so the buffer can be flushed - otherwise the message is never sent
+	delay_us_w(20000);		// Delay so the buffer can be flushed - otherwise the message is never sent
 	timer_stop();
 	queue_flush();
 	power_off();

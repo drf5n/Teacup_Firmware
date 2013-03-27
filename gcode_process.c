@@ -589,6 +589,7 @@ void process_gcode_command() {
 					queue_wait();
 				#endif
 				update_current_position();
+#pragma GCC diagnostic ignored "-Wformat"
 				sersendf_P(PSTR("X:%lq,Y:%lq,Z:%lq,E:%lq,F:%lu"),
 				                current_position.X, current_position.Y,
 				                current_position.Z, current_position.E,
@@ -609,7 +610,6 @@ void process_gcode_command() {
 						print_queue();
 					}
 				#endif /* DEBUG */
-
 				// newline is sent from gcode_parse after we return
 				break;
 
@@ -731,7 +731,7 @@ void process_gcode_command() {
 				sersendf_P(PSTR("Lookahead: "));
 				if(use_lookahead) sersendf_P(PSTR("enabled"));
 				else sersendf_P(PSTR("disabled"));
-				sersendf_P(PSTR(" - Moves joined: %d - Calculations failed in time: %d"), lookahead_joined, lookahead_timeout);
+				sersendf_P(PSTR(" - Moves joined: %lu - Calculations failed in time: %lu"), lookahead_joined, lookahead_timeout);
 				break;
 			#endif
 

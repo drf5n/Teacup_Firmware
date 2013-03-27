@@ -5,6 +5,7 @@
 */
 
 //#include <util/delay_basic.h>
+//#include "/Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/avr/include/util/delay_basic.h"
 
 //#include	"watchdog.h"
 
@@ -14,11 +15,15 @@
 /// \param delay time in microseconds
 void delay_us( uint16_t delay )
 {
+#if defined (__AVR__)
 	while (delay > (65536UL / (F_CPU / 4000000UL))) {
 		_delay_loop_2(65534); //
 		delay -= (65536L / (F_CPU / 4000000L));
 	}
 	_delay_loop_2( delay * (F_CPU / 4000000UL));
+#else 
+	delayMicroseconds(delay);
+#endif
 }
 
 /// delay microseconds
@@ -26,11 +31,15 @@ void delay_us( uint16_t delay )
 void _delay(uint32_t delay) {
 	wd_reset();
 	while (delay > (65536L / (F_CPU / 4000000L))) {
-		_delay_loop_2(65534); // we use 65534 here to compensate for the time that the surrounding loop takes. TODO: exact figure needs tuning
+	  delayMicroseconds(65534);
+	  //		_delay_loop_2(65534); // we use 65534 here to compensate for the time that the surrounding loop takes. TODO: exact figure needs tuning
 		delay -= (65536L / (F_CPU / 4000000L));
 		wd_reset();
 	}
-	_delay_loop_2(delay * (F_CPU / 4000000L));
+
+	//_delay_loop_2(delay * (F_CPU / 4000000L));
+	  delayMicroseconds(delay);
+
 	wd_reset();
 }
 
