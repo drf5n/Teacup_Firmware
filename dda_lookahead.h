@@ -1,27 +1,24 @@
 #ifndef DDA_LOOKAHEAD_H_
 #define DDA_LOOKAHEAD_H_
 
-#include	<stdint.h>
-#include	"config.h"
-#include	"dda.h"
+#include <stdint.h>
+#include "config.h"
+#include "dda.h"
 
-// Note: the floating point bit is optimized away during compilation
-#define ACCELERATE_RAMP_LEN(speed) (((speed)*(speed)) / (uint32_t)((7200000.0f * ACCELERATION) / (float)STEPS_PER_M_X))
-
-#ifdef LOOKAHEAD
 #ifndef ACCELERATION_RAMPING
 // Only enable the lookahead bits if ramping acceleration is enabled
 #undef LOOKAHEAD
-#else // ACCELERATION_RAMPING
+#endif
+
+#ifdef LOOKAHEAD
+
 // Sanity: make sure the defines are in place
 #ifndef LOOKAHEAD_MAX_JERK_XY
 #error Your config.h does not specify LOOKAHEAD_MAX_JERK_XY while LOOKAHEAD is enabled!
-#warning Try adding #define LOOKAHEAD_MAX_JERK_XY 10 to config.h
-#endif  // LOOKAHEAD_MAX_JERK_XY
+#endif
 #ifndef LOOKAHEAD_MAX_JERK_E
 #error Your config.h does not specify LOOKAHEAD_MAX_JERK_E while LOOKAHEAD is enabled!
-#warning Try adding #define LOOKAHEAD_MAX_JERK_E 10 to config.h
-#endif // LOOKAHEAD_MAX_JERK_E
+#endif
 
 // Sanity: the acceleration of Teacup is not implemented properly; as such we can only
 // do move joining when all axis use the same steps per mm. This is usually not an issue
@@ -44,8 +41,8 @@
 // To have a oneliner to fetch the correct scaler (pass the enum axis_e here)
 #define ACCELERATE_SCALER(axis) ((axis==X)?ACCELERATE_SCALER_X:((axis==Y)?ACCELERATE_SCALER_Y:((axis==Z)?ACCELERATE_SCALER_Z:ACCELERATE_SCALER_E)))
 
-#define MAX(a,b)	(((a)>(b))?(a):(b))
-#define MIN(a,b)	(((a)<(b))?(a):(b))
+#define MAX(a,b)  (((a)>(b))?(a):(b))
+#define MIN(a,b)  (((a)<(b))?(a):(b))
 
 /**
  * Join 2 moves by removing the full stop between them, where possible.
@@ -68,7 +65,5 @@ void dda_join_moves(DDA *prev, DDA *current);
 extern uint32_t lookahead_joined;
 extern uint32_t lookahead_timeout;
 
-#endif // ACCELERATION_RAMPING
-#endif // LOOKAHEAD
-
+#endif /* LOOKAHEAD */
 #endif /* DDA_LOOKAHEAD_H_ */

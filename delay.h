@@ -2,54 +2,62 @@
 #define	_DELAY_H
 
 #include	<stdint.h>
-#if defined (__AVR__)
-#include	<util/delay_basic.h> // AVR: /Applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/avr/include/util/delay_basic.h
-#else  // ARM / teensy 3.0
-#endif
-#include	"watchdog.h"
-
-#define		WAITING_DELAY		100
-
-#if F_CPU < 4000000UL
-#error Delay functions only work with F_CPU >= 4000000UL 
-#endif
 
 // microsecond delay, does NOT reset WDT if feature enabled
 void delay_us(uint16_t delay);
 
-// microsecond delay, does reset WDT if feature enabled
-void _delay(uint32_t delay);
-
 // millisecond delay, does reset WDT if feature enabled
-void _delay_ms(uint32_t delay);
+void delay_ms(uint32_t delay);
 
+#if !defined(__AVR__)
+#if !defined(__DOXYGEN__)
+static inline void _delay_loop_1(uint8_t __count) __attribute__((always_inline));
+static inline void _delay_loop_2(uint16_t __count) __attribute__((always_inline));
+#endif
 
-// microsecond timer, does reset WDT if feature enabled
-// 0 results in no real delay, but the watchdog
-// reset is called if the feature is enabled
-static void delay_us_w(uint32_t) __attribute__ ((always_inline));
-inline void delay_us_w(uint32_t d) {
-	if (d > (65536L / (F_CPU / 4000000L))) {
-		_delay(d);
-	}
-	else {
-		wd_reset();
-		if( d ) {
-		  //			_delay_loop_2(d * (F_CPU / 4000000L));
-		  delayMicroseconds(d);
-			wd_reset();
-		}
-	}
+/** \ingroup util_delay_basic
+
+    Delay loop using an 8-bit counter \c __count, so up to 256
+    iterations are possible.  (The value 256 would have to be passed
+    as 0.)  The loop executes three CPU cycles per iteration, not
+    including the overhead the compiler needs to setup the counter
+    register.
+
+    Thus, at a CPU speed of 1 MHz, delays of up to 768 microseconds
+    can be achieved.
+*/
+void
+_delay_loop_1(uint8_t __count)
+{
+        __asm__ volatile (
+                "1: dec %0" "\n\t"
+                "brne 1b"
+                : "=r" (__count)
+                : "0" (__count)
+        );
 }
 
-// millisecond timer, does reset WDT if feature enabled
-// 0 results in no real delay, but the watchdog
-// reset is called if the feature is enabled
-static void delay_ms(uint32_t) __attribute__ ((always_inline));
-inline void delay_ms(uint32_t d) {
-	if (d > 65)
-		_delay_ms(d);
-	else
-		delay_us_w(d * 1000);
- }
+/** \ingroup util_delay_basic
+
+    Delay loop using a 16-bit counter \c __count, so up to 65536
+    iterations are possible.  (The value 65536 would have to be
+    passed as 0.)  The loop executes four CPU cycles per iteration,
+    not including the overhead the compiler requires to setup the
+    counter register pair.
+
+    Thus, at a CPU speed of 1 MHz, delays of up to about 262.1
+    milliseconds can be achieved.
+ */
+void
+_delay_loop_2(uint16_t __count)
+{
+        __asm__ volatile (
+                "1: sbiw %0,1" "\n\t"
+                "brne 1b"
+                : "=w" (__count)
+                : "0" (__count)
+        );
+}
+
+#endif
 #endif	/* _DELAY_H */

@@ -139,9 +139,15 @@ MXL 2.032 mm/tooth, 29
 *                                                                           *
 * 2. ACCELERATION                                                           *
 *                                                                           *
-* IMPORTANT: choose only one! These algorithms choose when to step, trying  *
-*            to use more than one will have undefined and probably          *
-*            disastrous results!                                            *
+* Choose optionally one of ACCELERATION_REPRAP, ACCELERATION_RAMPING or     *
+* ACCELERATION_TEMPORAL. With none of them defined, movements are done      *
+* without acceleration. Recommended is ACCELERATION_RAMPING.                *
+*                                                                           *
+* LOOKAHEAD is experimental for now and works in conjunction with           *
+* ACCELERATION_RAMPING, only. That's why it's off by default.               *
+*                                                                           *
+* Also don't forget to adjust ACCELERATION to the capabilities of your      *
+* printer. The default is very moderate to be on the safe side.             *
 *                                                                           *
 \***************************************************************************/
 
@@ -178,34 +184,30 @@ MXL 2.032 mm/tooth, 29
 // #define ACCELERATION_TEMPORAL
 
 /** \def LOOKAHEAD
- * Define this to enable look-ahead during *ramping* acceleration to smoothly transition between moves
- * instead of performing a dead stop every move.
- * Enabling look-ahead requires ~3600 bytes of flash memory.
- */
+  Define this to enable look-ahead during *ramping* acceleration to smoothly
+  transition between moves instead of performing a dead stop every move.
+  Enabling look-ahead requires about 3600 bytes of flash memory.
+*/
 // #define LOOKAHEAD
-#if defined(LOOKAHEAD)
-# if !defined(ACCELERATION_RAMPING) 
-#error "LOOKAHEAD requires ACCELERATION_RAMPING."
-#endif
 
 /** \def LOOKAHEAD_MAX_JERK_XY
- * When performing look-ahead, we need to decide what an acceptable jerk to the mechanics is when we
- * (instantly) change direction. Units: um - sane values are 5 to 200
- */
+  When performing look-ahead, we need to decide what an acceptable jerk to the
+  mechanics is when we (instantly) change direction.
+
+  Units: micrometers
+  Sane values: 5 to 200
+*/
 #define LOOKAHEAD_MAX_JERK_XY 10
 
 /** \def LOOKAHEAD_MAX_JERK_E
- * When joining moves with different extrusion rates, define the maximum jerk for the extruder.
- */
+  When joining moves with different extrusion rates, define the maximum jerk
+  for the extruder.
+
+  Units: micrometers
+  Sane values: 5 to 200
+*/
 #define LOOKAHEAD_MAX_JERK_E 10
 
-/** \def LOOKAHEAD_DEBUG
- * When defined, some sanity tests are enabled to aid in debugging the lookahead
- * functionality. Since these actually terminate the firmware if something goes wrong,
- * do not enable this unless you are debugging!
- */
-//#define LOOKAHEAD_DEBUG
-//#define LOOKAHEAD_DEBUG_VERBOSE
 
 #endif //LOOKAHEAD
 

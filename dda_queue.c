@@ -61,6 +61,23 @@ uint8_t queue_empty() {
 	return result;
 }
 
+/// Return the current movement, or NULL, if there's no movement going on.
+DDA *queue_current_movement() {
+  uint8_t save_reg = SREG;
+  cli();
+  CLI_SEI_BUG_MEMORY_BARRIER();
+
+  DDA* current = &movebuffer[mb_tail];
+
+  if ( ! current->live || current->waitfor_temp || current->nullmove)
+    current = NULL;
+
+  MEMORY_BARRIER();
+  SREG = save_reg;
+
+  return current;
+}
+
 // -------------------------------------------------------
 // This is the one function called by the timer interrupt.
 // It calls a few other functions, though.
@@ -96,16 +113,16 @@ void queue_step() {
 void enqueue_home(TARGET *t, uint8_t endstop_check, uint8_t endstop_stop_cond) {
 	// don't call this function when the queue is full, but just in case, wait for a move to complete and free up the space for the passed target
 	while (queue_full())
-		delay_us_w(WAITING_DELAY);
+		delay_us(100);
 
 	uint8_t h = mb_head + 1;
 	h &= (MOVEBUFFER_SIZE - 1);
 
 	DDA* new_movebuffer = &(movebuffer[h]);
-	DDA* prev_movebuffer = (queue_empty() != 0) ? NULL : &movebuffer[mb_head];
-	
-	if (t != NULL) {
-		dda_create(new_movebuffer, t, prev_movebuffer /* supply the previous move for look-ahead */);
+  DDA* prev_movebuffer = (queue_empty() != 0) ? NULL : &movebuffer[mb_head];
+
+  if (t != NULL) {
+    dda_create(new_movebuffer, t, prev_movebuffer);
 		new_movebuffer->endstop_check = endstop_check;
 		new_movebuffer->endstop_stop_cond = endstop_stop_cond;
 	}
