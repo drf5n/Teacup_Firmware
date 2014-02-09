@@ -400,7 +400,7 @@ DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO1,      THERMISTOR_EXTRUDER)
 * Set 'tD' to the rate-of-change lookahead time. Smaller times reduce the   *
 * influence of this term. (seconds)                                         *
 *                                                                           *
-* You can set and read the above values with M300-M305.                     *
+* You can set and read the above values with M130-M136.                     *
 * The kP, kI, and kD values are set and reported in internal units.         *
 *                                                                           *
 * Set 'watts' to to the full-scale output of the heater                     *
