@@ -7,7 +7,7 @@
 #include "temp.h"
 
 #undef DEFINE_HEATER
-#define DEFINE_HEATER(name, pin, pwm) HEATER_ ## name,
+#define DEFINE_HEATER(name, pin, pwm, p,i,d,i_limit,watts,t_dead) HEATER_ ## name,
 typedef enum
 {
 	#include "config_wrapper.h"
