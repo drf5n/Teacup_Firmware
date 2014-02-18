@@ -33,6 +33,13 @@
   #error Teensy++ has an at90usb128?! set your cpu type in Makefile!
 #endif
 
+/* Compilation notes:
+
+    MCU_TARGET=at90usb1286 make -f Makefile-AVR
+
+    The at90usb1286 hex files are not supported by simulavr.
+*/
+
 /** \def F_CPU
   CPU clock rate
 */
