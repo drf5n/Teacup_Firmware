@@ -28,7 +28,6 @@ uint8_t heaters_all_off(void);
 void pid_set_p(heater_t index, int32_t p);
 void pid_set_i(heater_t index, int32_t i);
 void pid_set_d(heater_t index, int32_t d);
-void pid_set_i_limit(heater_t index, int32_t i_limit);
 void heater_save_settings(void);
 #endif /* EECONFIG */
 

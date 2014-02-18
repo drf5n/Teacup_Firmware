@@ -705,17 +705,6 @@ void process_gcode_command() {
 					pid_set_d(next_target.P, next_target.S);
 				break;
 
-			case 133:
-				//? --- M133: heater I limit ---
-				//? Undocumented.
-        #ifdef HEATER_EXTRUDER
-          if ( ! next_target.seen_P)
-            next_target.P = HEATER_EXTRUDER;
-        #endif
-				if (next_target.seen_S)
-					pid_set_i_limit(next_target.P, next_target.S);
-				break;
-
 			case 134:
 				//? --- M134: save PID settings to eeprom ---
 				//? Undocumented.

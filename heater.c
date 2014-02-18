@@ -52,7 +52,6 @@ struct {
 	int32_t						p_factor; ///< scaled P factor
 	int32_t						i_factor; ///< scaled I factor
 	int32_t						d_factor; ///< scaled D factor
-	int16_t						i_limit;  ///< scaled I limit, such that \f$-i_{limit} < i_{factor} < i_{limit}\f$
 } heaters_pid[NUM_HEATERS];
 
 /// \brief this struct holds the runtime heater data- PID integrator history, temperature history, sanity checker
@@ -82,8 +81,6 @@ struct {
 #define		DEFAULT_I				512
 /// default scaled D factor, equivalent to 24
 #define		DEFAULT_D				24576
-/// default scaled I limit
-#define		DEFAULT_I_LIMIT	384
 
 #ifdef EECONFIG
 /// this lives in the eeprom so we can save our PID settings for each heater
@@ -91,7 +88,6 @@ typedef struct {
 	int32_t		EE_p_factor;
 	int32_t		EE_i_factor;
 	int32_t		EE_d_factor;
-	int16_t		EE_i_limit;
 	uint16_t	crc; ///< crc so we can use defaults if eeprom data is invalid
 } EE_factor;
 
@@ -253,8 +249,6 @@ void heater_init() {
           eeprom_read_dword((uint32_t *) &EE_factors[i].EE_i_factor);
         heaters_pid[i].d_factor =
           eeprom_read_dword((uint32_t *) &EE_factors[i].EE_d_factor);
-        heaters_pid[i].i_limit =
-          eeprom_read_word((uint16_t *) &EE_factors[i].EE_i_limit);
 
 			if (crc_block(&heaters_pid[i].p_factor, 14) != eeprom_read_word((uint16_t *) &EE_factors[i].crc))
       #endif /* EECONFIG */
@@ -262,7 +256,6 @@ void heater_init() {
 				heaters_pid[i].p_factor = DEFAULT_P;
 				heaters_pid[i].i_factor = DEFAULT_I;
 				heaters_pid[i].d_factor = DEFAULT_D;
-				heaters_pid[i].i_limit = DEFAULT_I_LIMIT;
 			}
 		#endif /* BANG_BANG */
 	}
@@ -309,11 +302,6 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 
 		// integral
 		heaters_runtime[h].heater_i += t_error;
-		// prevent integrator wind-up
-		if (heaters_runtime[h].heater_i > heaters_pid[h].i_limit)
-			heaters_runtime[h].heater_i = heaters_pid[h].i_limit;
-		else if (heaters_runtime[h].heater_i < -heaters_pid[h].i_limit)
-			heaters_runtime[h].heater_i = -heaters_pid[h].i_limit;
 
 		// derivative
 		// note: D follows temp rather than error so there's no large derivative when the target changes
@@ -325,16 +313,22 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 				(((int32_t) heater_p) * heaters_pid[h].p_factor) +
 				(((int32_t) heaters_runtime[h].heater_i) * heaters_pid[h].i_factor) +
 				(((int32_t) heater_d) * heaters_pid[h].d_factor)
-			) / PID_SCALE
+			)
 		);
 
 		// rebase and limit factors
-		if (pid_output_intermed > 255)
+		if (pid_output_intermed > 255 * PID_SCALE){
+			// eliminate excess windup per http://www.controlguru.com/2008/021008.html
+			heaters_runtime[h].heater_i -= (pid_output_intermed - 255*PID_SCALE)/heaters_pid[h].i_factor;
 			pid_output = 255;
-		else if (pid_output_intermed < 0)
+		}
+		else if (pid_output_intermed < 0){
 			pid_output = 0;
+			// eliminate excess windup
+			heaters_runtime[h].heater_i += (-pid_output_intermed )/heaters_pid[h].i_factor;
+		}
 		else
-			pid_output = pid_output_intermed & 0xFF;
+		  pid_output = (pid_output_intermed / PID_SCALE) & 0xFF;
 
 		#ifdef	DEBUG
 		if (DEBUG_PID && (debug_flags & DEBUG_PID))
@@ -502,18 +496,6 @@ void pid_set_d(heater_t index, int32_t d) {
 	#endif /* BANG_BANG */
 }
 
-/** \brief set heater I limit
-	\param index heater to set I limit for
-	\param i_limit scaled I limit
-*/
-void pid_set_i_limit(heater_t index, int32_t i_limit) {
-	#ifndef	BANG_BANG
-		if (index >= NUM_HEATERS)
-			return;
-
-		heaters_pid[index].i_limit = i_limit;
-	#endif /* BANG_BANG */
-}
 
 /// \brief Write PID factors to eeprom
 void heater_save_settings() {
@@ -523,7 +505,6 @@ void heater_save_settings() {
       eeprom_write_dword((uint32_t *) &EE_factors[i].EE_p_factor, heaters_pid[i].p_factor);
       eeprom_write_dword((uint32_t *) &EE_factors[i].EE_i_factor, heaters_pid[i].i_factor);
       eeprom_write_dword((uint32_t *) &EE_factors[i].EE_d_factor, heaters_pid[i].d_factor);
-      eeprom_write_word((uint16_t *) &EE_factors[i].EE_i_limit, heaters_pid[i].i_limit);
       eeprom_write_word((uint16_t *) &EE_factors[i].crc, crc_block(&heaters_pid[i].p_factor, 14));
     }
   #endif /* BANG_BANG */
@@ -535,6 +516,6 @@ void heater_save_settings() {
 	\param i index of heater to send info for
 */
 void heater_print(uint16_t i) {
-	sersendf_P(PSTR("P:%ld I:%ld D:%ld Ilim:%u crc:%u "), heaters_pid[i].p_factor, heaters_pid[i].i_factor, heaters_pid[i].d_factor, heaters_pid[i].i_limit, crc_block(&heaters_pid[i].p_factor, 14));
+	sersendf_P(PSTR("P:%ld I:%ld D:%ld crc:%u "), heaters_pid[i].p_factor, heaters_pid[i].i_factor, heaters_pid[i].d_factor, crc_block(&heaters_pid[i].p_factor, 14));
 }
 #endif
