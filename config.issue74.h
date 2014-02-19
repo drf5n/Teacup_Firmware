@@ -27,6 +27,9 @@
 
 /*
 	Set your microcontroller type in Makefile! atmega168/atmega328p/atmega644p/atmega1280
+        Or set it on the command line:
+       
+        MCU_TARGET=atmega644p  make -f Makefile-AVR
 
 	If you want to port this to a new chip, start off with arduino.h and see how you go.
 */
