@@ -24,9 +24,9 @@ typedef struct {
 	volatile uint8_t *heater_port; ///< pointer to port. DDR is inferred from this pointer too
 	uint8_t						heater_pin;  ///< heater pin, not masked. eg for PB3 enter '3' here, or PB3_PIN or similar
 	volatile uint8_t *heater_pwm;  ///< pointer to 8-bit PWM register, eg OCR0A (8-bit) or ORC3L (low byte, 16-bit)
-        int32_t kP; 
-        int32_t kI;
-        int32_t kD;
+	int32_t kP;  // mibiCounts/qC
+	int32_t kI;  // mibiCounts/(qCqs)
+  	int32_t kD;  // mibiCounts/(qc/qs)
         int32_t watts;
         int32_t t_dead;
 } heater_definition_t;
@@ -37,8 +37,8 @@ typedef struct {
 #define	DEFINE_HEATER(name, pin, pwm,kP,tI,tD,watts,t_dead) { &(pin ## _WPORT), pin ## _PIN, \
                                         pwm ? (pin ## _PWM) : NULL, \
                                         (int32_t)(kP>0? kP*PID_SCALE_P     : -kP ), \
-      					(int32_t)(tI>0? (kP>0 ? kP*PID_SCALE_I/tI : PID_SCALE_I/tI ) : tI), \
-      					(int32_t)(tD >0? (kP>0 ? ((float)tD*PID_SCALE_D)/kP : kP ): -tD), \
+      					(int32_t)(tI>0? (kP>0 ? kP*PID_SCALE_I/tI : PID_SCALE_I/tI ) : -tI*PID_SCALE_I), \
+      					(int32_t)(tD >0? (kP>0 ? ((float)tD*PID_SCALE_D)/kP : 0L ): -tD*PID_SCALE_D), \
       					(int32_t)(watts*PID_SCALE),				\
                                         (int32_t)(t_dead*PID_SCALE)},
 static const heater_definition_t heaters[NUM_HEATERS] =
