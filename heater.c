@@ -345,13 +345,13 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 		// rebase and limit factors
 		if (pid_output_intermed > 255 * PID_SCALE){
 			// eliminate excess windup per http://www.controlguru.com/2008/021008.html
-			heaters_runtime[h].heater_i -= (pid_output_intermed - 255*PID_SCALE)/heaters_pid[h].i_factor;
+			heaters_runtime[h].heater_i -= 16*(pid_output_intermed - 255*PID_SCALE)/heaters_pid[h].i_factor;
 			pid_output = 255;
 		}
 		else if (pid_output_intermed < 0){
 			pid_output = 0;
 			// eliminate excess windup
-			heaters_runtime[h].heater_i += (-pid_output_intermed )/heaters_pid[h].i_factor;
+			heaters_runtime[h].heater_i += 16*(-pid_output_intermed )/heaters_pid[h].i_factor;
 		}
 		else
 		  pid_output = (pid_output_intermed / PID_SCALE) & 0xFF; // units of counts
