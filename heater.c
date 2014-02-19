@@ -27,20 +27,19 @@ typedef struct {
         int32_t kP; 
         int32_t kI;
         int32_t kD;
-        int16_t i_limit;
         int32_t watts;
         int32_t t_dead;
 } heater_definition_t;
 
 #undef DEFINE_HEATER
 /// \brief helper macro to fill heater definition struct from config.h
-#define	DEFINE_HEATER(name, pin, pwm,kP,tI,tD,i_limit,watts,t_dead) { &(pin ## _WPORT), pin ## _PIN, \
+// convert  tI, Td into kI, Kd; or copy zero and -negative values directly.
+#define	DEFINE_HEATER(name, pin, pwm,kP,tI,tD,watts,t_dead) { &(pin ## _WPORT), pin ## _PIN, \
                                         pwm ? (pin ## _PWM) : NULL, \
-                                        (int32_t)(kP>0? kP*PID_SCALE_P     : kP ), \
-                                        (int32_t)(tI>0? (kP*PID_SCALE_I/tI): tI), \
+                                        (int32_t)(kP>0? kP*PID_SCALE_P     : -kP ), \
+      					(int32_t)(tI>0? (kP>0 ? kP*PID_SCALE_I/tI : PID_SCALE_I/tI ) : tI), \
                                         (int32_t)(tD>0?(kP>0 ? ((float)tD*PID_SCALE_D)/kP : kP ) : -tD*PID_SCALE_D), \
-                                        (int16_t)(i_limit), \
-                                        (int32_t)(watts *PID_SCALE), \
+      					(int32_t)(watts*PID_SCALE),				\
                                         (int32_t)(t_dead*PID_SCALE)},
 static const heater_definition_t heaters[NUM_HEATERS] =
 {
@@ -290,7 +289,7 @@ void heater_init() {
 	// set all heater pins to output
 	do {
 		#undef	DEFINE_HEATER
-		#define	DEFINE_HEATER(name, pin, pwm,p,i,d,iLim,watt,t_dead) WRITE(pin, 0); SET_OUTPUT(pin);
+		#define	DEFINE_HEATER(name, pin, pwm,p,i,d,watt,t_dead) WRITE(pin, 0); SET_OUTPUT(pin);
 			#include "config_wrapper.h"
 		#undef DEFINE_HEATER
 	} while (0);
