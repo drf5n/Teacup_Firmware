@@ -38,7 +38,7 @@ typedef struct {
                                         pwm ? (pin ## _PWM) : NULL, \
                                         (int32_t)(kP>0? kP*PID_SCALE_P     : kP ), \
                                         (int32_t)(tI>0? (kP*PID_SCALE_I/tI): tI), \
-                                        (int32_t)(kP>0 ? ((float)tD*PID_SCALE_D)/kP : 12345 ), \
+                                        (int32_t)(kP>0 ? ((float)tD*PID_SCALE_D)/kP : kP ), \
                                         (int16_t)(i_limit), \
                                         (int32_t)(watts *PID_SCALE), \
                                         (int32_t)(t_dead*PID_SCALE)},
@@ -306,9 +306,9 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 	uint8_t		pid_output;
 
 	#ifndef	BANG_BANG
-		int16_t		heater_p;
-		int16_t		heater_d;
-		int16_t		t_error = target_temp - current_temp;
+		int16_t		heater_p; // units of qC=C/4
+		int16_t		heater_d; // units of TH_COUNT*C/s
+		int16_t		t_error = target_temp - current_temp; // units of qC
 	#endif	/* BANG_BANG */
 
 	if (h >= NUM_HEATERS)
@@ -328,14 +328,14 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 		heater_p = t_error; // Units: qC where 4qC=1C
 
 		// integral
-		heaters_runtime[h].heater_i += t_error;  // units: 1C*s=16qC*qs
+		heaters_runtime[h].heater_i += t_error;  // units: qC*qs=C*s/16
 
 		// derivative.  Units: qC/(TH_COUNT*qs) where 1C/s=TH_COUNT*4qC/4qs=8qC/qs)
 		// note: D follows temp rather than error so there's no large derivative when the target changes
 		heater_d = heaters_runtime[h].temp_history[heaters_runtime[h].temp_history_pointer] - current_temp;
 
 		// combine factors
-		int32_t pid_output_intermed = ( // Units: counts
+		int32_t pid_output_intermed = ( // units of counts*PID_SCALE
 			(
 				(((int32_t) heater_p) * heaters_pid[h].p_factor) +
 				(((int32_t) heaters_runtime[h].heater_i) * heaters_pid[h].i_factor) +
@@ -355,7 +355,7 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 			heaters_runtime[h].heater_i += (-pid_output_intermed )/heaters_pid[h].i_factor;
 		}
 		else
-		  pid_output = (pid_output_intermed / PID_SCALE) & 0xFF;
+		  pid_output = (pid_output_intermed / PID_SCALE) & 0xFF; // units of counts
 
 		#ifdef	DEBUG
 		if (DEBUG_PID && (debug_flags & DEBUG_PID))
