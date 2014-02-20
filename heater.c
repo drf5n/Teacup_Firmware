@@ -76,6 +76,9 @@ struct {
 		uint16_t					sanity_counter;				///< how long things haven't seemed sane
 		uint16_t					sane_temperature;			///< a temperature we consider sane given the heater settings
 	#endif
+	#ifdef BUMPLESS
+  		uint8_t                                         debump;                                 ///< Indicator to recalc PI
+	#endif
 
 	uint8_t						heater_output;					///< this is the PID value we eventually send to the heater
 } heaters_runtime[NUM_HEATERS];
@@ -333,6 +336,8 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 		// note: D follows temp rather than error so there's no large derivative when the target changes
 		heater_d = heaters_runtime[h].temp_history[heaters_runtime[h].temp_history_pointer] - current_temp;
 
+
+
 		// combine factors
 		int32_t pid_output_intermed = ( // units of counts*PID_SCALE
 			(
@@ -341,6 +346,16 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 				(((int32_t) heater_d) * heaters_pid[h].d_factor)/TH_COUNT               // qC/TH_COUNT*qs * kD
 			)
 		);
+
+
+		#ifdef BUMPLESS
+		if (heaters_runtime[h].debump){
+		  heaters_runtime[h].heater_i += 16*(heaters_runtime[h].heater_output*PID_SCALE -
+						     pid_output_intermed)/heaters_pid[h].i_factor;
+		  pid_output_intermed = heaters_runtime[h].heater_output*PID_SCALE;
+		  heaters_runtime[h].debump =0;
+		}
+		#endif
 
 		// rebase and limit factors
 		if (pid_output_intermed > 255 * PID_SCALE){
@@ -494,6 +509,9 @@ void pid_set_p(heater_t index, int32_t p) {
 			return;
 
 		heaters_pid[index].p_factor = p*PID_SCALE_P/1000;
+		#ifdef BUMPLESS
+		heaters_runtime[index].debump = 1;
+		#endif
 	#endif /* BANG_BANG */
 }
 
@@ -507,6 +525,9 @@ void pid_set_i(heater_t index, int32_t i) {
 			return;
 
 		heaters_pid[index].i_factor = i*PID_SCALE_I/1000;
+		#ifdef BUMPLESS
+		heaters_runtime[index].debump = 1;
+		#endif
 	#endif /* BANG_BANG */
 }
 
@@ -520,8 +541,14 @@ void pid_set_d(heater_t index, int32_t d) {
 			return;
 
 		heaters_pid[index].d_factor = d*PID_SCALE_D/1000;
+		#ifdef BUMPLESS
+		heaters_runtime[index].debump = 1;
+		#endif
+
 	#endif /* BANG_BANG */
 }
+
+
 
 
 /// \brief Write PID factors to eeprom
