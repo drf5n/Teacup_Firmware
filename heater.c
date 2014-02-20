@@ -91,21 +91,21 @@ struct {
 #ifdef PID_P
 #define         DEFAULT_P                               PID_P
 #else
-#define		DEFAULT_P				(32*PID_SCALE)
+#define		DEFAULT_P				(32*PID_SCALE_P)
 #endif 
 
 /// default PID_SCALE scaled I factor, equivalent to 0.5 ( 0.5 counts/((C/4)*(s/4)) or 8 counts/C/s
 #ifdef PID_I
 #define         DEFAULT_I                               PID_I
 #else
-#define		DEFAULT_I				(8*PID_SCALE)
+#define		DEFAULT_I				(8*PID_SCALE_I)
 #endif
 
 /// default scaled D factor, equivalent to 24 counts/(qc/(TH_COUNT*qs)) or 192 counts/(C/s)
 #ifdef PID_D
 #define         DEFAULT_D                               PID_D
 #else
-#define		DEFAULT_D				(24*TH_COUNT*PID_SCALE)
+#define		DEFAULT_D				(24*PID_SCALE_D)
 #endif
 
 
@@ -347,12 +347,13 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 		// rebase and limit factors
 		if (pid_output_intermed > 255 * PID_SCALE){
 			// eliminate excess windup per http://www.controlguru.com/2008/021008.html
+		  	// 16qC*qs=1C*s
 			heaters_runtime[h].heater_i -= 16*(pid_output_intermed - 255*PID_SCALE)/heaters_pid[h].i_factor;
 			pid_output = 255;
 		}
 		else if (pid_output_intermed < 0){
 			pid_output = 0;
-			// eliminate excess windup
+			// eliminate excess winddown
 			heaters_runtime[h].heater_i += 16*(-pid_output_intermed )/heaters_pid[h].i_factor;
 		}
 		else
@@ -487,40 +488,40 @@ uint8_t heaters_all_off() {
 #ifdef EECONFIG
 /** \brief set heater P factor
 	\param index heater to change factor for
-	\param p scaled P factor
+	\param p scaled P factor in milliCounts/C
 */
 void pid_set_p(heater_t index, int32_t p) {
 	#ifndef	BANG_BANG
 		if (index >= NUM_HEATERS)
 			return;
 
-		heaters_pid[index].p_factor = p;
+		heaters_pid[index].p_factor = p*PID_SCALE_P/1000;
 	#endif /* BANG_BANG */
 }
 
 /** \brief set heater I factor
 	\param index heater to change I factor for
-	\param i scaled I factor
+	\param i scaled I factor in milliCounts/(C*s)
 */
 void pid_set_i(heater_t index, int32_t i) {
 	#ifndef	BANG_BANG
 		if (index >= NUM_HEATERS)
 			return;
 
-		heaters_pid[index].i_factor = i;
+		heaters_pid[index].i_factor = i*PID_SCALE_I/1000;
 	#endif /* BANG_BANG */
 }
 
 /** \brief set heater D factor
 	\param index heater to change D factor for
-	\param d scaled D factor
+	\param d scaled D factor in milliCounts/(C/s)
 */
 void pid_set_d(heater_t index, int32_t d) {
 	#ifndef	BANG_BANG
 		if (index >= NUM_HEATERS)
 			return;
 
-		heaters_pid[index].d_factor = d;
+		heaters_pid[index].d_factor = d*PID_SCALE_D/1000;
 	#endif /* BANG_BANG */
 }
 
