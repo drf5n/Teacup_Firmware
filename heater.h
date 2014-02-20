@@ -22,7 +22,7 @@
   Conversion factor between internal kD value and user values. Since temperatures are measured in C/4 and the derivative 
   is measured over TH_COUNT 250ms cycles, kD in counts/(C/s) would be kI*PID_SCALE/TH_COUNT in internal counts/(qC/(TH_COUNT*qs)   
 */
-#define PID_SCALE_D (PID_SCALE/TH_COUNT)  // Internal 1/4 degree per 1/4s sampling cancels, but the dt window is TH_COUNT long.
+#define PID_SCALE_D (PID_SCALE)  // Internal 1/4 degree per 1/4s sampling cancels, but the dt window is TH_COUNT long.
 
 #undef DEFINE_HEATER
 #define DEFINE_HEATER(name, pin, pwm, p,i,d,watts,t_dead) HEATER_ ## name,
