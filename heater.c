@@ -89,7 +89,7 @@ struct {
 	#define HEATER_THRESHOLD 8
 #endif
 
-/// default PID_SCALE scaled P factor , equivalent to 8.0 ( 8.0 counts/(C/4)) or 32 counts/C
+/// default PID_SCALE scaled P factor, equivalent to 8.0 ( 8.0 counts/(C/4)) or 32 counts/C
 #ifdef PID_P
 #define         DEFAULT_P                               PID_P
 #else
@@ -343,7 +343,7 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 			(
 				(((int32_t) heater_p) * heaters_pid[h].p_factor) +                      // qC * kP
 				(((int32_t) heaters_runtime[h].heater_i) * heaters_pid[h].i_factor) +   // qC*qs * kI
-				(((int32_t) heater_d) * heaters_pid[h].d_factor)/TH_COUNT               // qC/TH_COUNT*qs * kD
+				(((int32_t) heater_d) * heaters_pid[h].d_factor)                        // qC/TH_COUNT*qs * kD
 			)
 		);
 
