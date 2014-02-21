@@ -40,6 +40,8 @@
     The at90usb1286 hex files are not supported by simulavr.
 */
 
+
+
 /** \def F_CPU
   CPU clock rate
 */
@@ -196,7 +198,7 @@ GT2 2.000 mm/tooth, 20 teeth
   transition between moves instead of performing a dead stop every move.
   Enabling look-ahead requires about 3600 bytes of flash memory.
 */
-// #define LOOKAHEAD
+#define LOOKAHEAD
 
 /** \def MAX_JERK_X
     \def MAX_JERK_Y
@@ -574,6 +576,11 @@ PWM value for 'off'
 */
 #define BANG_BANG_OFF  45
 
+/** \def BUMPLESS
+BUMPLESS adjustment of PID tuning values.  Define to allow recalculation of the PID integral term for seamless PID parameter modifications. 
+(Costs 158 bytes)
+*/
+#define BUMPLESS
 /**
   move buffer size, in number of moves
      note that each move takes a fair chunk of ram (69 bytes as of this writing) so don't make the buffer too big - a bigger serial readbuffer may help more than increasing this unless your gcodes are more than 70 characters long on average.
