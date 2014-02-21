@@ -27,20 +27,21 @@ typedef struct {
 	int32_t kP;  // mibiCounts/qC
 	int32_t kI;  // mibiCounts/(qCqs)
   	int32_t kD;  // mibiCounts/(qc/qs)
-        int32_t watts;
-        int32_t t_dead;
+	int32_t watts;
+	int32_t t_dead;
 } heater_definition_t;
 
 #undef DEFINE_HEATER
 /// \brief helper macro to fill heater definition struct from config.h
 // convert  tI, Td into kI, Kd; or copy zero and -negative values directly.
 #define	DEFINE_HEATER(name, pin, pwm,kP,tI,tD,watts,t_dead) { &(pin ## _WPORT), pin ## _PIN, \
-                                        pwm ? (pin ## _PWM) : NULL, \
-                                        (int32_t)(kP>0? kP*PID_SCALE_P     : -kP ), \
-      					(int32_t)(tI>0? (kP>0 ? kP*PID_SCALE_I/tI :  0L ) : -tI*PID_SCALE_I), \
-      					(int32_t)(tD>0? (kP>0 ? ((float)tD*PID_SCALE_D)/kP : 0L ): -tD*PID_SCALE_D), \
-      					(int32_t)(watts*PID_SCALE),				\
-                                        (int32_t)(t_dead*PID_SCALE)},
+			pwm ? (pin ## _PWM) : NULL, \
+			(int32_t)(kP>0? kP*PID_SCALE_P     : -kP ), \
+			(int32_t)(tI>0? (kP>0 ? kP*PID_SCALE_I/tI : 0L ) : -tI*PID_SCALE_I), \
+			(int32_t)(tD>0? (kP>0 ? ((float)tD*PID_SCALE_D)/kP : 0L ): -tD*PID_SCALE_D), \
+			(int32_t)(watts*PID_SCALE), \
+			(int32_t)(t_dead*PID_SCALE)},
+
 static const heater_definition_t heaters[NUM_HEATERS] =
 {
 	#include	"config_wrapper.h"
@@ -86,7 +87,7 @@ struct {
 	#define HEATER_THRESHOLD 8
 #endif
 
-/// default PID_SCALE scaled P factor , equivalent to 8.0 ( 8.0 counts/(C/4)) or 32 counts/C
+/// default PID_SCALE scaled P factor, equivalent to 8.0 ( 8.0 counts/(C/4)) or 32 counts/C
 #ifdef PID_P
 #define         DEFAULT_P                               PID_P
 #else
@@ -337,9 +338,9 @@ void heater_tick(heater_t h, temp_type_t type, uint16_t current_temp, uint16_t t
 		// combine factors
 		int32_t pid_output_intermed = ( // units of counts*PID_SCALE
 			(
-				(((int32_t) heater_p) * heaters_pid[h].p_factor) +
-				(((int32_t) heaters_runtime[h].heater_i) * heaters_pid[h].i_factor) +
-				(((int32_t) heater_d) * heaters_pid[h].d_factor)
+				(((int32_t) heater_p) * heaters_pid[h].p_factor) +                      // qC * kP
+				(((int32_t) heaters_runtime[h].heater_i) * heaters_pid[h].i_factor) +   // qC*qs * kI
+				(((int32_t) heater_d) * heaters_pid[h].d_factor)                        // qC/TH_COUNT*qs * kD
 			)
 		);
 

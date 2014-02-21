@@ -16,13 +16,14 @@
   Conversion factor between internal kI value and user values. Since temperatures are measured in C/4 and the I 
   accumulation is done four times per second, kI in counts/(C*s) would be kI*PID_SCALE/16 in internal counts/(qC*qs)   
 */
-#define PID_SCALE_I (PID_SCALE/16L)   // internal 1/4C and 1/4s second sampling augments.
+#define PID_SCALE_I (PID_SCALE/16L)   // internal 1/4C by 1/4s second integration.
 
 /** \def PID_SCALE_D
-  Conversion factor between internal kD value and user values. Since temperatures are measured in C/4 and the derivative 
-  is measured over TH_COUNT 250ms cycles, kD in counts/(C/s) would be kI*PID_SCALE/TH_COUNT in internal counts/(qC/(TH_COUNT*qs)   
+  Conversion factor between internal kD value and user values. 
+  Since temperatures are measured in C/4 and the derivative is measured over TH_COUNT 250ms cycles, 
+  kD in counts/(C/s) would be kI*PID_SCALE/TH_COUNT in internal counts/(qC/(TH_COUNT*qs)   
 */
-#define PID_SCALE_D (PID_SCALE/TH_COUNT)  // Internal 1/4 degree per 1/4s sampling cancels, but the dt window is TH_COUNT long.
+#define PID_SCALE_D (PID_SCALE/TH_COUNT) // Internal 1/4 degree per 1/4s sampling cancels, but the dt window is TH_COUNT long.
 
 #undef DEFINE_HEATER
 #define DEFINE_HEATER(name, pin, pwm, p,i,d,watts,t_dead) HEATER_ ## name,

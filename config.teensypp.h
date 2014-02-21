@@ -627,9 +627,6 @@ PWM value for 'off'
 
 /// this is the scaling of internally stored PID values. 1024L is a good value
 #define PID_SCALE                  1024L
-#define PID_SCALE_P (PID_SCALE*4L)   // convert to internal 1/4C 
-#define PID_SCALE_I (PID_SCALE*16L)   // internal 1/4C and 1/4s second sampling. 
-#define PID_SCALE_D (PID_SCALE*TH_COUNT)  // internal 1/4 degrees and 1/4s sampling cancels, but the dt window is TH_COUNT long
 
 /** \def ENDSTOP_STEPS
   number of steps to run into the endstops intentionally
