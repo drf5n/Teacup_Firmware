@@ -40,6 +40,8 @@
     The at90usb1286 hex files are not supported by simulavr.
 */
 
+
+
 /** \def F_CPU
   CPU clock rate
 */
@@ -195,7 +197,7 @@ MXL 2.032 mm/tooth, 29
   transition between moves instead of performing a dead stop every move.
   Enabling look-ahead requires about 3600 bytes of flash memory.
 */
-// #define LOOKAHEAD
+#define LOOKAHEAD
 
 /** \def MAX_JERK_X
     \def MAX_JERK_Y
@@ -573,6 +575,11 @@ PWM value for 'off'
 */
 #define BANG_BANG_OFF  45
 
+/** \def BUMPLESS
+BUMPLESS adjustment of PID tuning values.  Define to allow recalculation of the PID integral term for seamless PID parameter modifications. 
+(Costs 158 bytes)
+*/
+#define BUMPLESS
 /**
   move buffer size, in number of moves
      note that each move takes a fair chunk of ram (69 bytes as of this writing) so don't make the buffer too big - a bigger serial readbuffer may help more than increasing this unless your gcodes are more than 70 characters long on average.
@@ -626,9 +633,6 @@ PWM value for 'off'
 
 /// this is the scaling of internally stored PID values. 1024L is a good value
 #define PID_SCALE                  1024L
-#define PID_SCALE_P (PID_SCALE*4L)   // convert to internal 1/4C 
-#define PID_SCALE_I (PID_SCALE*16L)   // internal 1/4C and 1/4s second sampling augments. 
-#define PID_SCALE_D (PID_SCALE*TH_COUNT)  // internal 1/4 degrees and 1/4s sampling cancels, but the dt window is TH_COUNT long
 
 /** \def ENDSTOP_STEPS
   number of steps to run into the endstops intentionally

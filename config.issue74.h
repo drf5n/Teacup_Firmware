@@ -390,29 +390,36 @@ DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO1,      THERMISTOR_EXTRUDER)
 * with slow switches, like solid state relays. PWM frequency can be         *
 * influenced globally with FAST_PWM, see below.                             *
 *                                                                           *
-* Set 'kP' to the percent of full-scale-output per C degree C of error.     *
+* Set 'kP' to the counts/255 per degree C of error.                         *
 * Higher values have quicker response but are more prone to overshoot.      *
+* Teacup default is 32 counts/C.                                            *
 *                                                                           *
-* Set 'tI' to the integral time--the time it takes to change the output by  *
-* an amount equal to the error.  Good values are 2-3 times the dead-time,   * 
-* or 0.5-0.0.8 times the period of oscillation.  Longer times reduce the    *
-* influence on this term (seconds)                                          *
+* Set 'kI to the integral factor (sometimes defined as kP/Ti) in            *
+* counts/(C*s) of integrated error.    Negative values of kI are            *
+* interpreted as the integral time in seconds.  Teacup default is           *
+* 8 counts/(Cs).  Good values are kP/(2-3 times the dead-time)              * 
+* or kP/(0.5-0.0.8 times the period of oscillation.  Smaller kP reduce the  *
+* influence on this term.                                                   *
 *                                                                           *
 * Set 'i_limit' to 384.  **???** This helps limit the integral windup.      *
 *                                                                           *
-* Set 'tD' to the rate-of-change lookahead time. Smaller times reduce the   *
-* influence of this term. (seconds)                                         *
+* Set 'kD' to the derivative factor in counts/(C/s).  Smaller values limit  *
+* the influence of noise.  Negative values are interpreted as 'tD', the     *
+* derivative time, and are converted per kD=tD/kP.  Teacup default is       *
+* 192 counts/(C/s).                                                         *
 *                                                                           *
 * You can set and read the above values with M130-M136.                     *
 * The kP, kI, and kD values are set and reported in internal units.         *
 *                                                                           *
-* Set 'watts' to to the full-scale output of the heater                     *
+* Set 'watts' to to the full-scale output of the heater.  This is currently *
+* unused.                                                                   *
 *                                                                           *
 * set 't_dead' to the dead-time, the time it takes before the heater        *
-* begins to respond after a change in output.                               *
+* begins to respond after a change in output. This is currently unused.     *
 *                                                                           *
 * See https://controls.engin.umich.edu/wiki/index.php/PIDTuningClassical    *
-* for some further explanation of these parameters.                         *
+* or http://www.controlguru.com/  for some further explanation of these     *
+* parameters and guides on how to tune them.                                *
 *                                                                           *
 \***************************************************************************/
 
@@ -420,9 +427,9 @@ DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO1,      THERMISTOR_EXTRUDER)
 	#define DEFINE_HEATER(...)
 #endif
 
-//            name        port   pwm  kP   tI  tD   ILIM Watts, t_dead
-DEFINE_HEATER(extruder,   PB3,   1,  12.5,   4,  3*9,  321,   21,     9  )
-DEFINE_HEATER(bed,        PB4,   1,  2.34,   20,  0,  384,  150,    10  )
+//            name        port   pwm  kP   kI  kD   ILIM Watts, t_dead
+DEFINE_HEATER(extruder,   PB3,   1,  32,   8,  192,  321,   21,     9  )
+DEFINE_HEATER(bed,        PB4,   1,  2.34,  -20,  0,  384,  150,    10  )
 // DEFINE_HEATER(fan,     PINB4, 0,  10,  0.5,  0,  384, 0.21,     0.5)
 // DEFINE_HEATER(chamber, PIND7, 1,  24,  0.5,  0,  384,   40,    40  )
 // DEFINE_HEATER(motor,   PIND6, 1,  24,  0.5,  0,  384,  100,     0  )
@@ -563,11 +570,6 @@ PWM value for 'off'
 
 /// this is the scaling of internally stored PID values. 1024L is a good value
 #define	PID_SCALE						1024L
-/// These are some *uncertain* conversion values based on the 0.250Second sampling, 0.25C raw temp measurement and the TH_COUNT
-#define PID_SCALE_P (PID_SCALE*255/400)   // convert to %FS to internal counts/0.25C 
-#define PID_SCALE_I (PID_SCALE*16/100)   // internal 1/4C and 1/4s second sampling augments. 
-#define PID_SCALE_D (PID_SCALE*100*TH_COUNT/255)  // internal 1/4 degrees and 1/4s sampling cancels, but the dt window is TH_COUNT long
-
 
 /** \def ENDSTOP_STEPS
 	number of steps to run into the endstops intentionally

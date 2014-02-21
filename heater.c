@@ -27,20 +27,21 @@ typedef struct {
 	int32_t kP;  // mibiCounts/qC
 	int32_t kI;  // mibiCounts/(qCqs)
   	int32_t kD;  // mibiCounts/(qc/qs)
-        int32_t watts;
-        int32_t t_dead;
+  //        int32_t watts; // mibiwatts
+  //    int32_t t_dead; // qs
 } heater_definition_t;
 
 #undef DEFINE_HEATER
 /// \brief helper macro to fill heater definition struct from config.h
-// convert  tI, Td into kI, Kd; or copy zero and -negative values directly.
-#define	DEFINE_HEATER(name, pin, pwm,kP,tI,tD,watts,t_dead) { &(pin ## _WPORT), pin ## _PIN, \
-                                        pwm ? (pin ## _PWM) : NULL, \
-                                        (int32_t)(kP>0? kP*PID_SCALE_P     : -kP ), \
-      					(int32_t)(tI>0? (kP>0 ? kP*PID_SCALE_I/tI : PID_SCALE_I/tI ) : -tI*PID_SCALE_I), \
-      					(int32_t)(tD >0? (kP>0 ? ((float)tD*PID_SCALE_D)/kP : 0L ): -tD*PID_SCALE_D), \
-      					(int32_t)(watts*PID_SCALE),				\
-                                        (int32_t)(t_dead*PID_SCALE)},
+// convert  -tI, -Td into kI , Kd; or scale non-negative parameters.
+#define	DEFINE_HEATER(name, pin, pwm,kP,kI,kD,watts,t_dead) { &(pin ## _WPORT), pin ## _PIN, \
+      pwm ? (pin ## _PWM) : NULL,					\
+      (int32_t)(kP>0? kP*PID_SCALE_P     : -kP ),			\
+      (int32_t)(kI >=0 ? (kI*PID_SCALE_I): (kP >=0 ? kP*PID_SCALE_I/(-kI) :-kP *PID_SCALE_I/-kI/PID_SCALE_P )), \
+      (int32_t)(kD >=0 ? (kD*PID_SCALE_D):  (kP>=0? kD/kP*PID_SCALE_D : kD*PID_SCALE_P/(-kP)*PID_SCALE_D)) \
+      /*	,(int32_t)(watts*PID_SCALE) */				\
+      /* ,(int32_t)(t_dead*4)  */					\
+      },
 static const heater_definition_t heaters[NUM_HEATERS] =
 {
 	#include	"config_wrapper.h"
