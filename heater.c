@@ -267,6 +267,7 @@ void heater_init() {
 		#endif
 
 		#ifndef BANG_BANG
+      heaters_runtime[i].heater_i =0;
       #ifdef EECONFIG
         // read factors from eeprom
         heaters_pid[i].p_factor =
