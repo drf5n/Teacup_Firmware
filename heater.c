@@ -38,7 +38,7 @@ typedef struct {
                                         pwm ? (pin ## _PWM) : NULL, \
                                         (int32_t)(kP>0? kP*PID_SCALE_P     : kP ), \
                                         (int32_t)(tI>0? (kP*PID_SCALE_I/tI): tI), \
-                                        (int32_t)(kP>0 ? ((float)tD*PID_SCALE_D)/kP : 12345 ), \
+                                        (int32_t)(kP>0 ? ((float)tD*PID_SCALE_D)/kP : -kP ), \
                                         (int16_t)(i_limit), \
                                         (int32_t)(watts *PID_SCALE), \
                                         (int32_t)(t_dead*PID_SCALE)},
