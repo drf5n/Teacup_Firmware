@@ -104,7 +104,7 @@ GT2 2.000 mm/tooth, 20 teeth
 /// used for G0 rapid moves and as a cap for all other feedrates
 #define MAXIMUM_FEEDRATE_X      6881
 #define MAXIMUM_FEEDRATE_Y      6881
-#define MAXIMUM_FEEDRATE_Z      233
+#define MAXIMUM_FEEDRATE_Z      1233
 #define MAXIMUM_FEEDRATE_E      680
 
 /// used when searching endstops and as default feedrate
@@ -226,10 +226,10 @@ GT2 2.000 mm/tooth, 20 teeth
   Sane values: 0 to 400
   Valid range: 0 to 65535
 */
-#define MAX_JERK_X 20
-#define MAX_JERK_Y 20
+#define MAX_JERK_X 100
+#define MAX_JERK_Y 100
 #define MAX_JERK_Z 0
-#define MAX_JERK_E 20
+#define MAX_JERK_E 80
 
 
 
@@ -347,9 +347,16 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 //#define PS_MOSFET_PIN         xxxx
 #define STEPPER_ENABLE_PIN    DIO26
 #define STEPPER_INVERT_ENABLE
-
 //#define  SD_CARD_DETECT          DIO2
 //#define  SD_WRITE_PROTECT        DIO3
+
+/** \def DEBUG_LED_PIN
+   DEBUG_LED_PIN: Enable flashing of a LED during motor stepping.
+
+   Disabled by default.  Uncommenting this makes the binary a few bytes larger and adds a few cycles to the step timing interrrupt in timer.c
+*/
+#define DEBUG_LED_PIN DIO6
+
 
 
 /***************************************************************************\
@@ -462,24 +469,34 @@ DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO6,      THERMISTOR_EXTRUDER)
 * with slow switches, like solid state relays. PWM frequency can be         *
 * influenced globally with FAST_PWM, see below.                             *
 *                                                                           *
-* Set 'kP' to the counts per 255 of full-scale-output perdegree C of error. *
+* Set 'kP' to the counts/255 per degree C of error.                         *
 * Higher values have quicker response but are more prone to overshoot.      *
+* Teacup default is 32 counts/C.                                            *
 *                                                                           *
-* Set 'tI' to the integral time--the time it takes to change the output by  *
-* an amount equal to the error.  Good values are 2-3 times the dead-time,   * 
-* or 0.5-0.0.8 times the period of oscillation.                             *
+* Set 'kI to the integral factor (sometimes defined as kP/Ti) in            *
+* counts/(C*s) of integrated error.    Negative values of kI are            *
+* interpreted as the integral time in seconds.  Teacup default is           *
+* 8 counts/(Cs).  Good values are kP/(2-3 times the dead-time)              * 
+* or kP/(0.5-0.0.8 times the period of oscillation.  Smaller kP reduce the  *
+* influence on this term.                                                   *
 *                                                                           *
-* Set 'tD' to the rate-of-change lookahead time                             *
+* Set 'kD' to the derivative factor in counts/(C/s).  Smaller values limit  *
+* the influence of noise.  Negative values are interpreted as 'tD', the     *
+* derivative time, and are converted per kD=tD/kP.  Teacup default is       *
+* 192 counts/(C/s).                                                         *
 *                                                                           *
 * You can set and read the above values with M130-M136.                     *
+* The kP, kI, and kD values are set and reported in internal units.         *
 *                                                                           *
-* Set 'watts' to to the full-scale output of the heater                     *
+* Set 'watts' to to the full-scale output of the heater.  This is currently *
+* unused.                                                                   *
 *                                                                           *
 * set 't_dead' to the dead-time, the time it takes before the heater        *
-* begins to respond after a change in output.                               *
+* begins to respond after a change in output. This is currently unused.     *
 *                                                                           *
 * See https://controls.engin.umich.edu/wiki/index.php/PIDTuningClassical    *
-* for some further explanation                                              *
+* or http://www.controlguru.com/  for some further explanation of these     *
+* parameters and guides on how to tune them.                                *
 *                                                                           *
 \***************************************************************************/
 
