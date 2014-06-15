@@ -460,18 +460,39 @@ DEFINE_TEMP_SENSOR(bed,       TT_THERMISTOR,  AIO6,      THERMISTOR_EXTRUDER)
 * with slow switches, like solid state relays. PWM frequency can be         *
 * influenced globally with FAST_PWM, see below.                             *
 *                                                                           *
+* Set 'kP' to the percent of full-scale-output per C degree C of error.     *
+* Higher values have quicker response but are more prone to overshoot.      *
+*                                                                           *
+* Set 'tI' to the integral time--the time it takes to change the output by  *
+* an amount equal to the error.  Good values are 2-3 times the dead-time,   * 
+* or 0.5-0.0.8 times the period of oscillation.                             *
+*                                                                           *
+* Set 'i_limit' to 384.  **???** This helps limit the integral windup.      *
+*                                                                           *
+* Set 'tD' to the rate-of-change lookahead time                             *
+*                                                                           *
+* You can set and read the above values with M300-M305.                     *
+*                                                                           *
+* Set 'watts' to to the full-scale output of the heater                     *
+*                                                                           *
+* set 't_dead' to the dead-time, the time it takes before the heater        *
+* begins to respond after a change in output.                               *
+*                                                                           *
+* See https://controls.engin.umich.edu/wiki/index.php/PIDTuningClassical    *
+* for some further explanation                                              *
+*                                                                           *
 \***************************************************************************/
 
 #ifndef DEFINE_HEATER
   #define DEFINE_HEATER(...)
 #endif
 
-//            name      port   pwm
-DEFINE_HEATER(extruder, DIO15, 1)
-DEFINE_HEATER(bed,      DIO14,  1)
-DEFINE_HEATER(fan,      DIO16,  0)
-// DEFINE_HEATER(chamber,  PIND7, 1)
-// DEFINE_HEATER(motor,    PIND6, 1)
+//            name      port   pwm  P   I   D  ILIM Watts, t_dead)
+DEFINE_HEATER(extruder, DIO15,   1, 24, 0.5, 0, 100,   21,    9)
+DEFINE_HEATER(bed,      DIO14,   1, 24, 0.5, 0, 100,  150,    15)
+DEFINE_HEATER(fan,      DIO16,   0, 24, 0.5, 0, 100,  0.21,   1)
+// DEFINE_HEATER(chamber, PIND7,   1, 24, 0.5, 0, 100,  40,   40)
+// DEFINE_HEATER(motor,   PIND6,   0, 24, 0.5, 0, 100,  50,   0)
 
 /// and now because the c preprocessor isn't as smart as it could be,
 /// uncomment the ones you've listed above and comment the rest.
@@ -608,6 +629,9 @@ PWM value for 'off'
 
 /// this is the scaling of internally stored PID values. 1024L is a good value
 #define PID_SCALE                  1024L
+#define PID_SCALE_P (PID_SCALE*4)   // convert to internal 1/4C 
+#define PID_SCALE_I (PID_SCALE*16)   // internal 1/4C and 1/4s second sampling augments. 
+#define PID_SCALE_D (PID_SCALE*TH_COUNT)  // internal 1/4 degrees and 1/4s sampling cancels, but the dt window is TH_COUNT long
 
 /** \def ENDSTOP_STEPS
   number of steps to run into the endstops intentionally
